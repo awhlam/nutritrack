@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NutriTrack">
+  <rect width="512" height="512" rx="112" fill="#0b0f14"/>
+  <rect x="8" y="8" width="496" height="496" rx="106" fill="none" stroke="#10b981" stroke-width="16"/>
+  <path d="M286 84 154 300h84l-28 128 132-216h-84l28-128z" fill="#10b981"/>
+</svg>
