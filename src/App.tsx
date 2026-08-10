@@ -69,7 +69,7 @@ function App() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
+    <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
       {screen === 'home' &&
         (store.activeSession ? (
           <Tracker
