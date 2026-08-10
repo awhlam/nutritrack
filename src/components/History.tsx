@@ -1,6 +1,6 @@
 import {
-  activityLabel,
   carbsPerHour,
+  formatClockTimeShort,
   formatDuration,
   formatRate,
   totalCarbs,
@@ -39,6 +39,7 @@ export function History({ sessions, onSelect, onClose }: HistoryProps) {
         <ul className="flex flex-col gap-2">
           {finished.map((session) => {
             const end = session.endedAt ?? Date.now()
+            const rate = carbsPerHour(session, end)
             return (
               <li key={session.id}>
                 <button
@@ -48,16 +49,15 @@ export function History({ sessions, onSelect, onClose }: HistoryProps) {
                 >
                   <div>
                     <div className="font-medium text-white">
-                      {session.activity === 'run' ? '🏃' : '🚴'}{' '}
-                      {activityLabel(session.activity)}
-                    </div>
-                    <div className="text-xs text-slate-400">
                       {new Date(session.startedAt).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
-                      })}{' '}
-                      · {formatDuration(end - session.startedAt)}
+                      })}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {formatClockTimeShort(session.startedAt)} ·{' '}
+                      {formatDuration(end - session.startedAt)}
                     </div>
                   </div>
                   <div className="text-right">
@@ -65,7 +65,7 @@ export function History({ sessions, onSelect, onClose }: HistoryProps) {
                       {Math.round(totalCarbs(session.entries))}g
                     </div>
                     <div className="text-xs text-slate-500">
-                      {formatRate(carbsPerHour(session, end))}/hr
+                      {rate === null ? '—' : `${formatRate(rate)}/hr`}
                     </div>
                   </div>
                 </button>

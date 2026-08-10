@@ -1,7 +1,5 @@
-import type { Activity } from '../lib/types'
-
 interface StartScreenProps {
-  onStart: (activity: Activity) => void
+  onStart: () => void
 }
 
 export function StartScreen({ onStart }: StartScreenProps) {
@@ -14,22 +12,13 @@ export function StartScreen({ onStart }: StartScreenProps) {
         </p>
       </div>
 
-      <div className="flex w-full max-w-sm flex-col gap-4">
-        <button
-          type="button"
-          onClick={() => onStart('run')}
-          className="rounded-2xl bg-emerald-500 py-6 text-xl font-bold text-slate-950 active:scale-95 transition-transform"
-        >
-          🏃 Start Run
-        </button>
-        <button
-          type="button"
-          onClick={() => onStart('bike')}
-          className="rounded-2xl bg-sky-500 py-6 text-xl font-bold text-slate-950 active:scale-95 transition-transform"
-        >
-          🚴 Start Ride
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onStart}
+        className="w-full max-w-sm rounded-2xl bg-emerald-500 py-6 text-xl font-bold text-slate-950 active:scale-95 transition-transform"
+      >
+        Start Activity
+      </button>
     </div>
   )
 }

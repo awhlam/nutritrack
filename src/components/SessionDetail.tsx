@@ -3,7 +3,7 @@ import { StatBar } from './StatBar'
 import { EntryList } from './EntryList'
 import { EntryEditModal } from './EntryEditModal'
 import { ExportPanel } from './ExportPanel'
-import { activityLabel } from '../lib/format'
+import { formatClockTimeShort } from '../lib/format'
 import type { Entry, Session } from '../lib/types'
 
 interface SessionDetailProps {
@@ -30,15 +30,15 @@ export function SessionDetail({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">
-            {session.activity === 'run' ? '🏃' : '🚴'} {activityLabel(session.activity)}
-          </h1>
-          <p className="text-xs text-slate-400">
             {new Date(session.startedAt).toLocaleDateString(undefined, {
               weekday: 'short',
               month: 'short',
               day: 'numeric',
               year: 'numeric',
             })}
+          </h1>
+          <p className="text-xs text-slate-400">
+            Started {formatClockTimeShort(session.startedAt)}
           </p>
         </div>
         <button

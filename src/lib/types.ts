@@ -1,5 +1,3 @@
-export type Activity = 'run' | 'bike'
-
 export interface Preset {
   id: string
   label: string
@@ -18,7 +16,6 @@ export interface Entry {
 
 export interface Session {
   id: string
-  activity: Activity
   startedAt: number
   endedAt: number | null
   currentMileage: number

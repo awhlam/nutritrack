@@ -1,6 +1,5 @@
 import { forwardRef } from 'react'
 import {
-  activityLabel,
   carbsPerHour,
   formatClockTimeShort,
   formatDuration,
@@ -34,7 +33,7 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
       >
         <div className="mb-4">
           <div className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
-            NutriTrack · {activityLabel(session.activity)}
+            NutriTrack
           </div>
           <div className="text-sm text-slate-400">{dateStr}</div>
         </div>

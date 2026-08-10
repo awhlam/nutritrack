@@ -13,7 +13,7 @@ function fileBaseName(session: Session) {
   const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
     d.getDate(),
   ).padStart(2, '0')}`
-  return `nutritrack-${session.activity}-${stamp}`
+  return `nutritrack-${stamp}`
 }
 
 export function ExportPanel({ session }: ExportPanelProps) {

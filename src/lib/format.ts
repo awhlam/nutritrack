@@ -1,13 +1,5 @@
 import type { Entry, Session } from './types'
 
-export function formatClockTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-}
-
 export function formatClockTimeShort(ts: number): string {
   return new Date(ts).toLocaleTimeString(undefined, {
     hour: 'numeric',
@@ -41,7 +33,15 @@ export function applyTimeInput(ts: number, timeStr: string): number {
 
 export function formatMileage(mi: number | null): string {
   if (mi === null) return '—'
-  return `${mi.toFixed(1)} mi`
+  return `${formatMileageNumber(mi)} mi`
+}
+
+/**
+ * Mileage steps in whole miles, so render whole numbers plainly and only show a
+ * decimal when one is actually present (hand-typed values, older sessions).
+ */
+export function formatMileageNumber(mi: number): string {
+  return Number.isInteger(mi) ? String(mi) : mi.toFixed(1)
 }
 
 export function elapsedMs(session: Session, now: number): number {
@@ -65,10 +65,6 @@ export function formatRate(perHour: number | null): string {
   return perHour === null ? '—' : `${Math.round(perHour)}g`
 }
 
-export function activityLabel(activity: Session['activity']): string {
-  return activity === 'run' ? 'Run' : 'Bike Ride'
-}
-
 export function buildTextExport(session: Session): string {
   const lines: string[] = []
   const dateStr = new Date(session.startedAt).toLocaleDateString(undefined, {
@@ -82,7 +78,7 @@ export function buildTextExport(session: Session): string {
   const carbs = totalCarbs(session.entries)
   const perHour = carbsPerHour(session, end)
 
-  lines.push(`NutriTrack — ${activityLabel(session.activity)}`)
+  lines.push('NutriTrack')
   lines.push(dateStr)
   lines.push('')
   lines.push(`Duration:       ${duration}`)

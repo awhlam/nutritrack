@@ -5,7 +5,6 @@ import { PresetGrid } from './PresetGrid'
 import { EntryList } from './EntryList'
 import { CustomEntryModal } from './CustomEntryModal'
 import { EntryEditModal } from './EntryEditModal'
-import { activityLabel } from '../lib/format'
 import type { Entry, Preset, Session } from '../lib/types'
 
 interface TrackerProps {
@@ -45,7 +44,7 @@ export function Tracker({
     <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
       <div className="flex items-center justify-between">
         <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-300">
-          {session.activity === 'run' ? '🏃' : '🚴'} {activityLabel(session.activity)}
+          In Progress
         </span>
         <button
           type="button"

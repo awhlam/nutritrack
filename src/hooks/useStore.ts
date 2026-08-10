@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Activity, Entry, Preset, Session } from '../lib/types'
+import type { Entry, Preset, Session } from '../lib/types'
 import {
   loadActiveSessionId,
   loadPresets,
@@ -23,10 +23,9 @@ export function useStore() {
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) ?? null
 
-  const startSession = useCallback((activity: Activity) => {
+  const startSession = useCallback(() => {
     const session: Session = {
       id: uid(),
-      activity,
       startedAt: Date.now(),
       endedAt: null,
       currentMileage: 0,

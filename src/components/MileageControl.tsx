@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatMileageNumber } from '../lib/format'
 
 interface MileageControlProps {
   mileage: number
@@ -10,12 +11,11 @@ export function MileageControl({ mileage, onChange }: MileageControlProps) {
   const [draft, setDraft] = useState(String(mileage))
 
   const bump = (delta: number) => {
-    const next = Math.max(0, Math.round((mileage + delta) * 10) / 10)
-    onChange(next)
+    onChange(Math.max(0, Math.round(mileage + delta)))
   }
 
   const startEdit = () => {
-    setDraft(mileage.toFixed(1))
+    setDraft(formatMileageNumber(mileage))
     setEditing(true)
   }
 
@@ -29,7 +29,7 @@ export function MileageControl({ mileage, onChange }: MileageControlProps) {
     <div className="flex items-center justify-between rounded-2xl bg-slate-800/60 px-3 py-2">
       <button
         type="button"
-        onClick={() => bump(-0.1)}
+        onClick={() => bump(-1)}
         className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-700 text-2xl font-bold text-slate-200 active:bg-slate-600"
         aria-label="Decrease mileage"
       >
@@ -58,14 +58,15 @@ export function MileageControl({ mileage, onChange }: MileageControlProps) {
             onClick={startEdit}
             className="text-2xl font-bold text-white"
           >
-            {mileage.toFixed(1)} <span className="text-base font-medium text-slate-400">mi</span>
+            {formatMileageNumber(mileage)}{' '}
+            <span className="text-base font-medium text-slate-400">mi</span>
           </button>
         )}
       </div>
 
       <button
         type="button"
-        onClick={() => bump(0.1)}
+        onClick={() => bump(1)}
         className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-700 text-2xl font-bold text-slate-200 active:bg-slate-600"
         aria-label="Increase mileage"
       >
