@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { StatBar } from './StatBar'
 import { MileageControl } from './MileageControl'
+import { DrinkSlots } from './DrinkSlots'
 import { PresetGrid } from './PresetGrid'
 import { EntryList } from './EntryList'
 import { CustomEntryModal } from './CustomEntryModal'
@@ -14,7 +15,7 @@ interface TrackerProps {
   onLogPreset: (preset: Preset) => void
   onLogCustom: (data: {
     label: string
-    carbs: number
+    carbs: number | null
     timestamp: number
     mileage: number
   }) => void
@@ -23,6 +24,10 @@ interface TrackerProps {
   onMileageChange: (mileage: number) => void
   onManagePresets: () => void
   onEndSession: () => void
+  onAssignDrink: (slotIndex: 0 | 1, presetId: string) => void
+  onCreateAndAssignDrink: (slotIndex: 0 | 1, data: { label: string; carbs: number }) => void
+  onClearDrink: (slotIndex: 0 | 1) => void
+  onLogDrink: (slotIndex: 0 | 1, targetPercent: number) => void
 }
 
 export function Tracker({
@@ -36,9 +41,16 @@ export function Tracker({
   onMileageChange,
   onManagePresets,
   onEndSession,
+  onAssignDrink,
+  onCreateAndAssignDrink,
+  onClearDrink,
+  onLogDrink,
 }: TrackerProps) {
   const [showCustom, setShowCustom] = useState(false)
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
+
+  const itemPresets = presets.filter((p) => p.kind === 'item')
+  const drinkPresets = presets.filter((p) => p.kind === 'drink')
 
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
@@ -58,8 +70,17 @@ export function Tracker({
       <StatBar session={session} now={now} />
       <MileageControl mileage={session.currentMileage} onChange={onMileageChange} />
 
+      <DrinkSlots
+        session={session}
+        drinkPresets={drinkPresets}
+        onAssign={onAssignDrink}
+        onCreateAndAssign={onCreateAndAssignDrink}
+        onClear={onClearDrink}
+        onLog={onLogDrink}
+      />
+
       <PresetGrid
-        presets={presets}
+        presets={itemPresets}
         onLog={onLogPreset}
         onCustom={() => setShowCustom(true)}
         onManage={onManagePresets}

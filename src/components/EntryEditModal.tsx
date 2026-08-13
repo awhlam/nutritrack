@@ -5,7 +5,7 @@ import type { Entry } from '../lib/types'
 
 interface EntryEditModalProps {
   entry: Entry
-  onSave: (patch: { timestamp: number; mileage: number | null }) => void
+  onSave: (patch: { timestamp: number; mileage: number | null; carbs: number | null }) => void
   onDelete: () => void
   onClose: () => void
 }
@@ -15,20 +15,34 @@ export function EntryEditModal({ entry, onSave, onDelete, onClose }: EntryEditMo
   const [mileage, setMileage] = useState(
     entry.mileage === null ? '' : String(entry.mileage),
   )
+  const [carbs, setCarbs] = useState(entry.carbs === null ? '' : String(entry.carbs))
 
   const handleSave = () => {
     const mileageNum = parseFloat(mileage)
+    const carbsNum = parseFloat(carbs)
     onSave({
       timestamp,
       mileage: mileage.trim() === '' || Number.isNaN(mileageNum) ? null : mileageNum,
+      carbs: carbs.trim() === '' || Number.isNaN(carbsNum) ? null : carbsNum,
     })
   }
 
   return (
     <Modal title={`Edit: ${entry.label}`} onClose={onClose}>
       <div className="space-y-4">
-        <div className="rounded-xl bg-slate-800/60 px-4 py-2 text-sm text-slate-300">
-          {entry.carbs}g carbs
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-400">
+            Carbs (g){entry.carbs === null ? ' — not entered yet' : ''}
+          </label>
+          <input
+            autoFocus={entry.carbs === null}
+            type="number"
+            inputMode="decimal"
+            value={carbs}
+            onChange={(e) => setCarbs(e.target.value)}
+            placeholder="?"
+            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">

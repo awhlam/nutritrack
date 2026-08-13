@@ -4,7 +4,12 @@ import { applyTimeInput, timeInputValue } from '../lib/format'
 
 interface CustomEntryModalProps {
   defaultMileage: number
-  onSave: (data: { label: string; carbs: number; timestamp: number; mileage: number }) => void
+  onSave: (data: {
+    label: string
+    carbs: number | null
+    timestamp: number
+    mileage: number
+  }) => void
   onClose: () => void
 }
 
@@ -15,18 +20,20 @@ export function CustomEntryModal({
 }: CustomEntryModalProps) {
   const [label, setLabel] = useState('')
   const [carbs, setCarbs] = useState('')
+  const [carbsPending, setCarbsPending] = useState(false)
   const [timestamp, setTimestamp] = useState(() => Date.now())
   const [mileage, setMileage] = useState(String(defaultMileage.toFixed(1)))
 
   const carbsNum = parseFloat(carbs)
   const mileageNum = parseFloat(mileage)
-  const valid = label.trim().length > 0 && !Number.isNaN(carbsNum) && carbsNum >= 0
+  const valid =
+    label.trim().length > 0 && (carbsPending || (!Number.isNaN(carbsNum) && carbsNum >= 0))
 
   const handleSave = () => {
     if (!valid) return
     onSave({
       label: label.trim(),
-      carbs: carbsNum,
+      carbs: carbsPending ? null : carbsNum,
       timestamp,
       mileage: Number.isNaN(mileageNum) ? defaultMileage : mileageNum,
     })
@@ -50,16 +57,24 @@ export function CustomEntryModal({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">
-            Carbs (g)
-          </label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="block text-xs font-medium text-slate-400">Carbs (g)</label>
+            <button
+              type="button"
+              onClick={() => setCarbsPending((v) => !v)}
+              className={`text-xs font-medium ${carbsPending ? 'text-emerald-400' : 'text-slate-500'}`}
+            >
+              {carbsPending ? '✓ ' : ''}I'll add carbs later
+            </button>
+          </div>
           <input
             type="number"
             inputMode="decimal"
             value={carbs}
             onChange={(e) => setCarbs(e.target.value)}
             placeholder="0"
-            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
+            disabled={carbsPending}
+            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500 disabled:opacity-40"
           />
         </div>
 
