@@ -28,6 +28,7 @@ describe('useStore sessions', () => {
       { presetId: null, fillId: 0 },
       { presetId: null, fillId: 0 },
     ])
+    expect(result.current.activeSession?.name).toBe('')
   })
 
   it('ending a session stamps endedAt and clears the active session', () => {
@@ -183,6 +184,25 @@ describe('useStore entries', () => {
       })
     })
     expect(hook.result.current.activeSession!.entries[0].carbs).toBeNull()
+  })
+
+  it('names the session', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.setSessionName(id, 'Boston Marathon')
+    })
+    expect(hook.result.current.activeSession!.name).toBe('Boston Marathon')
+  })
+
+  it('renames back to unnamed with an empty string', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.setSessionName(id, 'Boston Marathon')
+    })
+    act(() => {
+      hook.result.current.setSessionName(id, '')
+    })
+    expect(hook.result.current.activeSession!.name).toBe('')
   })
 })
 

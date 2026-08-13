@@ -55,6 +55,9 @@ export function History({ sessions, onSelect, onClose }: HistoryProps) {
                         year: 'numeric',
                       })}
                     </div>
+                    {session.name && (
+                      <div className="text-sm text-slate-300">{session.name}</div>
+                    )}
                     <div className="text-xs text-slate-400">
                       {formatClockTimeShort(session.startedAt)} ·{' '}
                       {formatDuration(end - session.startedAt)}

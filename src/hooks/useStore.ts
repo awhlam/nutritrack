@@ -26,6 +26,7 @@ export function useStore() {
   const startSession = useCallback(() => {
     const session: Session = {
       id: uid(),
+      name: '',
       startedAt: Date.now(),
       endedAt: null,
       currentMileage: 0,
@@ -99,6 +100,10 @@ export function useStore() {
     )
   }, [])
 
+  const setSessionName = useCallback((sessionId: string, name: string) => {
+    setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, name } : s)))
+  }, [])
+
   /** Assigning a drink (including re-picking the same one for a refill) always bumps fillId, so progress starts over for the new bottle. */
   const assignDrinkSlot = useCallback((sessionId: string, slotIndex: 0 | 1, presetId: string) => {
     setSessions((prev) =>
@@ -150,6 +155,7 @@ export function useStore() {
     updateEntry,
     deleteEntry,
     setSessionMileage,
+    setSessionName,
     assignDrinkSlot,
     clearDrinkSlot,
     addPreset,

@@ -154,6 +154,7 @@ function App() {
           onMileageChange={(mileage) =>
             store.setSessionMileage(store.activeSession!.id, mileage)
           }
+          onNameChange={(name) => store.setSessionName(store.activeSession!.id, name)}
           onManagePresets={() => setScreen('presets')}
           onHistory={() => setScreen('history')}
           onEndSession={handleEndSession}
@@ -191,6 +192,7 @@ function App() {
           now={now}
           onUpdateEntry={(entryId, patch) => store.updateEntry(detailSession.id, entryId, patch)}
           onDeleteEntry={(entryId) => store.deleteEntry(detailSession.id, entryId)}
+          onNameChange={(name) => store.setSessionName(detailSession.id, name)}
           onDeleteSession={() => {
             if (!window.confirm('Delete this session and all its entries?')) return
             store.deleteSession(detailSession.id)

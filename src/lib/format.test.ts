@@ -32,6 +32,7 @@ function entry(partial: Partial<Entry> = {}): Entry {
 function session(partial: Partial<Session> = {}): Session {
   return {
     id: 's1',
+    name: '',
     startedAt: 0,
     endedAt: null,
     currentMileage: 0,
@@ -216,6 +217,17 @@ describe('buildTextExport', () => {
   it('shows a dash for the rate when the session is too short', () => {
     const short = session({ startedAt, endedAt: startedAt + 10_000, entries: [entry()] })
     expect(buildTextExport(short)).toContain('Avg Carbs/hr:   —')
+  })
+
+  it('includes the event name in the heading when the session is named', () => {
+    const named = session({ startedAt, endedAt: startedAt + HOUR, name: 'Boston Marathon' })
+    expect(buildTextExport(named)).toContain('NutriTrack — Boston Marathon')
+  })
+
+  it('falls back to the plain heading when the session has no name', () => {
+    const unnamed = session({ startedAt, endedAt: startedAt + HOUR, name: '' })
+    const text = buildTextExport(unnamed)
+    expect(text.split('\n')[0]).toBe('NutriTrack')
   })
 
   it('flags pending entries and shows a question mark instead of silently zeroing them', () => {

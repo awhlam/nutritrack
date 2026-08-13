@@ -35,6 +35,8 @@ export interface DrinkSlot {
 
 export interface Session {
   id: string
+  /** Optional event name (e.g. "Boston Marathon"). Empty string = unnamed. */
+  name: string
   startedAt: number
   endedAt: number | null
   currentMileage: number

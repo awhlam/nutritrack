@@ -34,6 +34,7 @@ function drinkEntry(percent: number, slot: 0 | 1 = 0, fillId = 1): Entry {
 function session(overrides: Partial<Session> = {}): Session {
   return {
     id: 's1',
+    name: '',
     startedAt: 0,
     endedAt: null,
     currentMileage: 0,

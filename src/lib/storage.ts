@@ -59,6 +59,7 @@ function normalizeSession(session: Session): Session {
   const slots = session.drinkSlots
   return {
     ...session,
+    name: session.name ?? '',
     drinkSlots: [slots?.[0] ?? emptyDrinkSlot(), slots?.[1] ?? emptyDrinkSlot()],
   }
 }
