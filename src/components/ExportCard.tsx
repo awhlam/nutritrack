@@ -36,6 +36,7 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
           <div className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
             NutriTrack
           </div>
+          {session.name && <div className="text-lg font-bold text-white">{session.name}</div>}
           <div className="text-sm text-slate-400">{dateStr}</div>
         </div>
 

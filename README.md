@@ -15,6 +15,7 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 ## Features
 
 - **Opens straight into tracking** — no start screen to tap through; a session begins the instant you open the app, and reopening later resumes whatever's still in progress.
+- **Name your event** — tap "+ Name this event" (during the activity or afterward) to label a session, e.g. "Boston Marathon". Shows up in History, on the summary screen, and in both export formats; unnamed sessions just show their date, as before.
 - **One-tap logging** — preset buttons for the nutrition you bring. Tapping one instantly logs the time and your current mileage.
 - **Tap-to-add preset slots** — the button grid always shows a few empty slots alongside your configured ones; tap an empty one to define a new preset (label, carbs, color) right there.
 - **Two drink bottle slots** — assign what's in each bottle, then log how much you've drunk in quarters (¼ / ½ / ¾ / Empty) or an exact percent. Each log only counts the amount consumed *since* the last one — no double-counting — and progress is derived from the log itself, so editing or deleting an entry can't leave it out of sync.
@@ -46,11 +47,12 @@ without touching your history.
 Item presets live in a small grid with a couple of empty "Tap to add" slots
 built in, so setting up what you carry doesn't require a trip to the manager
 first. The manager itself splits items and drinks into separate tabs for
-editing or deleting.
+editing or deleting. In History, named sessions show their name under the
+date; unnamed ones just show the date, as they always have.
 
 <p align="center">
   <img src="docs/screenshots/presets.png" alt="Preset manager Items tab listing Energy Gel and Rice Cake with edit and delete actions, plus an Add preset button" width="330">
-  <img src="docs/screenshots/history.png" alt="History list of four past activities with total carbs and carbs per hour" width="330">
+  <img src="docs/screenshots/history.png" alt="History list of four past activities, two with event names (Boston Marathon, Local 5K) and two unnamed, showing total carbs and carbs per hour" width="330">
 </p>
 
 ### Editing entries

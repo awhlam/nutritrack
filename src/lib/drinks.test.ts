@@ -17,6 +17,7 @@ function entry(partial: Partial<Entry> = {}): Entry {
 function session(entries: Entry[], drinkSlots: Session['drinkSlots']): Session {
   return {
     id: 's1',
+    name: '',
     startedAt: 0,
     endedAt: null,
     currentMileage: 0,

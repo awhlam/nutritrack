@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { StatBar } from './StatBar'
+import { SessionNameField } from './SessionNameField'
 import { EntryList } from './EntryList'
 import { EntryEditModal } from './EntryEditModal'
 import { ExportPanel } from './ExportPanel'
@@ -12,6 +13,7 @@ interface SessionDetailProps {
   onUpdateEntry: (entryId: string, patch: Partial<Entry>) => void
   onDeleteEntry: (entryId: string) => void
   onDeleteSession: () => void
+  onNameChange: (name: string) => void
   onClose: () => void
 }
 
@@ -21,6 +23,7 @@ export function SessionDetail({
   onUpdateEntry,
   onDeleteEntry,
   onDeleteSession,
+  onNameChange,
   onClose,
 }: SessionDetailProps) {
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
@@ -49,6 +52,8 @@ export function SessionDetail({
           Done
         </button>
       </div>
+
+      <SessionNameField name={session.name} onChange={onNameChange} className="text-lg" />
 
       <StatBar session={session} now={now} />
 

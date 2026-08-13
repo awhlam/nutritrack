@@ -87,7 +87,7 @@ export function buildTextExport(session: Session): string {
   const perHour = carbsPerHour(session, end)
   const pending = pendingCarbsCount(session.entries)
 
-  lines.push('NutriTrack')
+  lines.push(session.name ? `NutriTrack — ${session.name}` : 'NutriTrack')
   lines.push(dateStr)
   lines.push('')
   lines.push(`Duration:       ${duration}`)

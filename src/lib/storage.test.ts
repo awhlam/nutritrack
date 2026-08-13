@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { DEFAULT_PRESETS, loadPresets, migratePresets, savePresets } from './storage'
+import {
+  DEFAULT_PRESETS,
+  loadPresets,
+  loadSessions,
+  migratePresets,
+  savePresets,
+} from './storage'
 import type { Preset } from './types'
 
 beforeEach(() => {
@@ -72,5 +78,42 @@ describe('loadPresets', () => {
     const loaded = loadPresets()
     expect(loaded.map((p) => p.id)).toEqual(['preset-gel'])
     expect(loaded[0].carbs).toBe(30)
+  })
+})
+
+describe('loadSessions', () => {
+  it('backfills name as an empty string for sessions saved before naming existed', () => {
+    const oldSession = {
+      id: 's1',
+      startedAt: 0,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+      // no `name` field — simulates data saved before this feature existed
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([oldSession]))
+    const loaded = loadSessions()
+    expect(loaded[0].name).toBe('')
+  })
+
+  it('preserves an existing name', () => {
+    const named = {
+      id: 's1',
+      name: 'Boston Marathon',
+      startedAt: 0,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([named]))
+    expect(loadSessions()[0].name).toBe('Boston Marathon')
   })
 })
