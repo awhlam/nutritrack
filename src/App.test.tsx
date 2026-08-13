@@ -2,11 +2,34 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import App from './App'
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+describe('App startup', () => {
+  it('starts a session automatically, with no start screen or tap required', async () => {
+    render(<App />)
+    // The tracker (elapsed/carbs stats, End button) should appear on its own.
+    await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
+    expect(screen.queryByText(/start/i)).toBeNull()
+  })
+
+  it('resumes the existing active session instead of starting a second one', async () => {
+    const { unmount } = render(<App />)
+    await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
+    unmount()
+
+    const sessions = JSON.parse(localStorage.getItem('nutritrack:sessions') ?? '[]')
+    expect(sessions).toHaveLength(1)
+
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
+    const sessionsAfterRemount = JSON.parse(localStorage.getItem('nutritrack:sessions') ?? '[]')
+    expect(sessionsAfterRemount).toHaveLength(1)
+  })
 })
 
 describe('App shell', () => {
