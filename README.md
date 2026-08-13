@@ -3,6 +3,8 @@
 A single-page web app for tracking nutrition consumption during runs and bike
 rides — designed for big, glove/sweat-friendly buttons you can hit mid-activity.
 
+**Live app:** https://awhlam.github.io/nutritrack/
+
 <p align="center">
   <img src="docs/screenshots/tracker.png" alt="Tracker screen showing 1h 32m elapsed, 64g total carbs, drink bottle slots for Water and Carb Drink Mix, item preset slots for Energy Gel and Rice Cake plus two empty tap-to-add slots, and a full-width Custom Entry button" width="330">
 </p>
@@ -58,8 +60,8 @@ the fact, including filling in a carb count you deliberately skipped at the
 time.
 
 <p align="center">
-  <img src="docs/screenshots/edit-entry.png" alt="Editing a past entry's time and mileage" width="330">
-  <img src="docs/screenshots/summary.png" alt="Finished session summary with export buttons and the full entry log" width="330">
+  <img src="docs/screenshots/edit-entry.png" alt="Editing a pending entry to fill in its carb count, with the amber 'Add carbs' pill visible in the log behind the modal" width="330">
+  <img src="docs/screenshots/summary.png" alt="Finished session summary showing a pending entry, drink log lines with their logged percent, export buttons, and the full entry log" width="330">
 </p>
 
 ### Export
@@ -68,7 +70,7 @@ time.
 native share sheet, so it can go straight into Messages or Strava.
 
 <p align="center">
-  <img src="docs/screenshots/export-card.png" alt="Exported summary card with duration, total carbs, carbs per hour and a table of every entry" width="420">
+  <img src="docs/screenshots/export-card.png" alt="Exported summary card with duration, total carbs, carbs per hour, and a table of every entry including drink percentages and a pending '?' carb count" width="420">
 </p>
 
 <details>
@@ -76,22 +78,22 @@ native share sheet, so it can go straight into Messages or Strava.
 
 ```
 NutriTrack
-Monday, August 10, 2026
+Thursday, August 13, 2026
 
-Duration:       2h 58m
-Total Carbs:    195 g
-Avg Carbs/hr:   66 g/hr
+Duration:       1h 58m
+Total Carbs:    94 g (excludes pending entries below)
+Avg Carbs/hr:   48 g/hr
 Entries:        7
 
 Time       Mileage   Item                      Carbs
 ----------------------------------------------------------
-7:12 AM    4 mi      Sports Drink              36g
-7:28 AM    9 mi      Energy Gel                25g
-7:47 AM    15 mi     Banana                    27g
-8:03 AM    20 mi     Chews                     24g
-8:22 AM    26 mi     Energy Gel                25g
-8:39 AM    32 mi     Sports Drink              36g
-8:58 AM    38 mi     Fig Bar                   22g
+7:12 AM    4 mi      Energy Gel                30g
+7:22 AM    7 mi      Water (+25%)              0g
+7:45 AM    14 mi     Carb Drink Mix (+25%)     13g
+8:00 AM    18 mi     Rice Cake                 21g
+8:15 AM    23 mi     Water (+25%)              0g
+8:35 AM    29 mi     Energy Gel                30g
+8:50 AM    34 mi     Aid station bar           ?
 
 Logged with NutriTrack
 ```
