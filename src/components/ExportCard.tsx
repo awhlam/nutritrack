@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 import {
   carbsPerHour,
+  formatCarbs,
   formatClockTimeShort,
   formatDuration,
   formatMileage,
@@ -64,11 +65,14 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
                   {formatClockTimeShort(e.timestamp)}
                 </span>
                 <span className="flex-1 truncate text-left text-white">
-                  {e.label}{' '}
+                  {e.label}
+                  {e.drink && ` (+${e.drink.percent}%)`}{' '}
                   <span className="text-slate-500">{formatMileage(e.mileage)}</span>
                 </span>
-                <span className="shrink-0 font-semibold text-emerald-400">
-                  {Math.round(e.carbs)}g
+                <span
+                  className={`shrink-0 font-semibold ${e.carbs === null ? 'text-amber-400' : 'text-emerald-400'}`}
+                >
+                  {formatCarbs(e.carbs)}
                 </span>
               </div>
             ))

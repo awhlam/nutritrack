@@ -1,4 +1,4 @@
-import { formatClockTimeShort, formatMileage } from '../lib/format'
+import { formatCarbs, formatClockTimeShort, formatMileage } from '../lib/format'
 import type { Entry } from '../lib/types'
 
 interface EntryListProps {
@@ -30,10 +30,17 @@ export function EntryList({ entries, onSelect }: EntryListProps) {
               <span className="font-medium text-white">{entry.label}</span>
               <span className="text-xs text-slate-400">
                 {formatClockTimeShort(entry.timestamp)} · {formatMileage(entry.mileage)}
+                {entry.drink && ` · +${entry.drink.percent}%`}
               </span>
             </div>
-            <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-emerald-400">
-              {Math.round(entry.carbs)}g
+            <span
+              className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                entry.carbs === null
+                  ? 'bg-amber-500/15 text-amber-400'
+                  : 'bg-slate-800 text-emerald-400'
+              }`}
+            >
+              {entry.carbs === null ? 'Add carbs' : formatCarbs(entry.carbs)}
             </span>
           </button>
         </li>

@@ -15,16 +15,29 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 ## Features
 
 - **One-tap logging** — preset buttons for the nutrition you bring (e.g. "Energy Gel, 25g carbs"). Tapping one instantly logs the time and your current mileage.
-- **Custom entries** — log anything unplanned with a label and carb count.
+- **Two drink bottle slots** — assign what's in each bottle, then log how much you've drunk in quarters (¼ / ½ / ¾ / Empty) or an exact percent. Each log only counts the amount consumed *since* the last one — no double-counting — and progress is derived from the log itself, so editing or deleting an entry can't leave it out of sync.
+- **Custom entries** — log anything unplanned with a label and carb count, or log it now and fill in the carbs later (e.g. an aid-station snack you can't identify mid-stride).
 - **Mileage tracking** — a big +/− stepper in whole miles (tap the number to type an exact value), snapshotted onto each entry you log.
-- **Live stats** — running totals for elapsed time, total carbs consumed, and carbs/hour, updated in real time.
-- **Editable log** — every entry's time and mileage can be corrected after the fact; entries can also be deleted.
-- **Preset manager** — add, edit, or delete your preset nutrition buttons.
+- **Live stats** — running totals for elapsed time, total carbs consumed, and carbs/hour, updated in real time. Entries still missing a carb count are flagged and excluded from the totals until filled in.
+- **Editable log** — every entry's time, mileage, and carb count can be corrected after the fact; entries can also be deleted.
+- **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks.
 - **History** — past activities are saved locally so you can review them later.
 - **Export** — at the end of a session, export the log as a plain-text summary (`.txt`) or a shareable image (`.png`).
 
 All data is stored locally in the browser (`localStorage`) — no account or
 backend required.
+
+### Drinks
+
+Assign a bottle to each of the two slots — pick an existing drink or create one
+on the spot with its total carb count. Log progress as you drink it; each tap
+only adds the delta since your last log, so there's no way to double-count.
+Finishing a bottle and swapping in a new one resets that slot's progress
+without touching your history.
+
+<p align="center">
+  <img src="docs/screenshots/drinks.png" alt="Two drink bottle slots mid-ride: Water at 50% and Carb Drink Mix at 50% with 30g of 60g consumed, quarter and custom-percent logging buttons" width="330">
+</p>
 
 ### Presets and history
 
@@ -85,9 +98,10 @@ npm run lint     # lint
 ## Tests
 
 [Vitest](https://vitest.dev) covers the fueling math and formatting in
-`src/lib/format.test.ts`, session/entry/preset state in
-`src/hooks/useStore.test.ts`, and the mileage stepper and start screen in
-`src/components/*.test.tsx`.
+`src/lib/format.test.ts`, drink-slot percent derivation in
+`src/lib/drinks.test.ts`, session/entry/preset/drink-slot state in
+`src/hooks/useStore.test.ts`, and components (mileage stepper, drink slots,
+start screen) in `src/components/*.test.tsx`.
 
 ## Deployment
 

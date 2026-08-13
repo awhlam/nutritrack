@@ -50,7 +50,15 @@ export function elapsedMs(session: Session, now: number): number {
 }
 
 export function totalCarbs(entries: Entry[]): number {
-  return entries.reduce((sum, e) => sum + e.carbs, 0)
+  return entries.reduce((sum, e) => sum + (e.carbs ?? 0), 0)
+}
+
+export function pendingCarbsCount(entries: Entry[]): number {
+  return entries.filter((e) => e.carbs === null).length
+}
+
+export function formatCarbs(carbs: number | null): string {
+  return carbs === null ? '?' : `${Math.round(carbs)}g`
 }
 
 const MIN_ELAPSED_FOR_RATE_MS = 60_000
@@ -77,12 +85,13 @@ export function buildTextExport(session: Session): string {
   const duration = formatDuration(end - session.startedAt)
   const carbs = totalCarbs(session.entries)
   const perHour = carbsPerHour(session, end)
+  const pending = pendingCarbsCount(session.entries)
 
   lines.push('NutriTrack')
   lines.push(dateStr)
   lines.push('')
   lines.push(`Duration:       ${duration}`)
-  lines.push(`Total Carbs:    ${Math.round(carbs)} g`)
+  lines.push(`Total Carbs:    ${Math.round(carbs)} g${pending > 0 ? ' (excludes pending entries below)' : ''}`)
   lines.push(`Avg Carbs/hr:   ${perHour === null ? '—' : `${Math.round(perHour)} g/hr`}`)
   lines.push(`Entries:        ${session.entries.length}`)
   lines.push('')
@@ -93,8 +102,9 @@ export function buildTextExport(session: Session): string {
   for (const e of sorted) {
     const time = formatClockTimeShort(e.timestamp).padEnd(10)
     const mile = formatMileage(e.mileage).padEnd(9)
-    const label = e.label.padEnd(25).slice(0, 25)
-    lines.push(`${time} ${mile} ${label} ${Math.round(e.carbs)}g`)
+    const percentSuffix = e.drink ? ` (+${e.drink.percent}%)` : ''
+    const label = `${e.label}${percentSuffix}`.padEnd(25).slice(0, 25)
+    lines.push(`${time} ${mile} ${label} ${formatCarbs(e.carbs)}`)
   }
 
   lines.push('')

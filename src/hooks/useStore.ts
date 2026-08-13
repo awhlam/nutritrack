@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Entry, Preset, Session } from '../lib/types'
+import type { DrinkSlot, Entry, Preset, Session } from '../lib/types'
 import {
   loadActiveSessionId,
   loadPresets,
@@ -30,6 +30,10 @@ export function useStore() {
       endedAt: null,
       currentMileage: 0,
       entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
     }
     setSessions((prev) => [...prev, session])
     setActiveSessionId(session.id)
@@ -95,8 +99,36 @@ export function useStore() {
     )
   }, [])
 
+  /** Assigning a drink (including re-picking the same one for a refill) always bumps fillId, so progress starts over for the new bottle. */
+  const assignDrinkSlot = useCallback((sessionId: string, slotIndex: 0 | 1, presetId: string) => {
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== sessionId) return s
+        const drinkSlots = [...s.drinkSlots] as [DrinkSlot, DrinkSlot]
+        drinkSlots[slotIndex] = { presetId, fillId: drinkSlots[slotIndex].fillId + 1 }
+        return { ...s, drinkSlots }
+      }),
+    )
+  }, [])
+
+  const clearDrinkSlot = useCallback((sessionId: string, slotIndex: 0 | 1) => {
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== sessionId) return s
+        const drinkSlots = [...s.drinkSlots] as [DrinkSlot, DrinkSlot]
+        drinkSlots[slotIndex] = { presetId: null, fillId: drinkSlots[slotIndex].fillId }
+        return { ...s, drinkSlots }
+      }),
+    )
+  }, [])
+
   const addPreset = useCallback((preset: Omit<Preset, 'id'>) => {
     setPresets((prev) => [...prev, { ...preset, id: uid() }])
+  }, [])
+
+  /** For creating a preset with a caller-chosen id, e.g. so it can be assigned to a drink slot in the same action. */
+  const addPresetWithId = useCallback((preset: Preset) => {
+    setPresets((prev) => [...prev, preset])
   }, [])
 
   const updatePreset = useCallback((id: string, patch: Partial<Preset>) => {
@@ -118,7 +150,10 @@ export function useStore() {
     updateEntry,
     deleteEntry,
     setSessionMileage,
+    assignDrinkSlot,
+    clearDrinkSlot,
     addPreset,
+    addPresetWithId,
     updatePreset,
     deletePreset,
   }

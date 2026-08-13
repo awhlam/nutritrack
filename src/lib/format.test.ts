@@ -4,10 +4,12 @@ import {
   buildTextExport,
   carbsPerHour,
   elapsedMs,
+  formatCarbs,
   formatDuration,
   formatMileage,
   formatMileageNumber,
   formatRate,
+  pendingCarbsCount,
   timeInputValue,
   totalCarbs,
 } from './format'
@@ -34,6 +36,10 @@ function session(partial: Partial<Session> = {}): Session {
     endedAt: null,
     currentMileage: 0,
     entries: [],
+    drinkSlots: [
+      { presetId: null, fillId: 0 },
+      { presetId: null, fillId: 0 },
+    ],
     ...partial,
   }
 }
@@ -83,6 +89,30 @@ describe('totalCarbs', () => {
 
   it('is zero for an empty log', () => {
     expect(totalCarbs([])).toBe(0)
+  })
+
+  it('treats a pending (null) carb count as excluded, not zero-and-silent', () => {
+    expect(totalCarbs([entry({ carbs: 25 }), entry({ carbs: null })])).toBe(25)
+  })
+})
+
+describe('pendingCarbsCount', () => {
+  it('counts entries with no carb count yet', () => {
+    expect(pendingCarbsCount([entry({ carbs: 25 }), entry({ carbs: null }), entry({ carbs: null })])).toBe(2)
+  })
+
+  it('is zero when every entry has a carb count', () => {
+    expect(pendingCarbsCount([entry({ carbs: 25 })])).toBe(0)
+  })
+})
+
+describe('formatCarbs', () => {
+  it('rounds a known carb count', () => {
+    expect(formatCarbs(24.6)).toBe('25g')
+  })
+
+  it('renders a question mark for a pending entry', () => {
+    expect(formatCarbs(null)).toBe('?')
   })
 })
 
@@ -186,5 +216,27 @@ describe('buildTextExport', () => {
   it('shows a dash for the rate when the session is too short', () => {
     const short = session({ startedAt, endedAt: startedAt + 10_000, entries: [entry()] })
     expect(buildTextExport(short)).toContain('Avg Carbs/hr:   —')
+  })
+
+  it('flags pending entries and shows a question mark instead of silently zeroing them', () => {
+    const withPending = session({
+      startedAt,
+      endedAt: startedAt + HOUR,
+      entries: [entry({ carbs: 25 }), entry({ label: 'Aid station snack', carbs: null })],
+    })
+    const text = buildTextExport(withPending)
+    expect(text).toContain('excludes pending entries')
+    expect(text).toContain('Aid station snack')
+    expect(text).toMatch(/Aid station snack\s+\?/)
+    expect(text).toContain('Total Carbs:    25 g')
+  })
+
+  it('shows the percent consumed for a drink log', () => {
+    const withDrink = session({
+      startedAt,
+      endedAt: startedAt + HOUR,
+      entries: [entry({ label: 'Water', carbs: 9, drink: { slot: 0, fillId: 1, percent: 25 } })],
+    })
+    expect(buildTextExport(withDrink)).toContain('Water (+25%)')
   })
 })

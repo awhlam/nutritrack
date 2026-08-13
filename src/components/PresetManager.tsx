@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Preset } from '../lib/types'
+import type { Preset, PresetKind } from '../lib/types'
 
 interface PresetManagerProps {
   presets: Preset[]
@@ -11,14 +11,23 @@ interface PresetManagerProps {
 
 const COLORS = ['#f59e0b', '#eab308', '#f97316', '#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#14b8a6']
 
+const TABS: { kind: PresetKind; label: string; addLabel: string; carbsLabel: string }[] = [
+  { kind: 'item', label: 'Items', addLabel: '+ Add preset button', carbsLabel: 'Carbs per serving (g)' },
+  { kind: 'drink', label: 'Drinks', addLabel: '+ Add drink', carbsLabel: 'Total carbs in the full bottle (g)' },
+]
+
 export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: PresetManagerProps) {
+  const [kind, setKind] = useState<PresetKind>('item')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+
+  const tab = TABS.find((t) => t.kind === kind)!
+  const filtered = presets.filter((p) => p.kind === kind)
 
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Preset Buttons</h1>
+        <h1 className="text-xl font-bold text-white">Presets</h1>
         <button
           type="button"
           onClick={onClose}
@@ -28,11 +37,32 @@ export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: P
         </button>
       </div>
 
+      <div className="flex gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.kind}
+            type="button"
+            onClick={() => {
+              setKind(t.kind)
+              setEditingId(null)
+              setAdding(false)
+            }}
+            className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
+              kind === t.kind ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-col gap-2">
-        {presets.map((preset) =>
+        {filtered.map((preset) =>
           editingId === preset.id ? (
             <PresetForm
               key={preset.id}
+              kind={kind}
+              carbsLabel={tab.carbsLabel}
               initial={preset}
               onSave={(data) => {
                 onUpdate(preset.id, data)
@@ -52,7 +82,9 @@ export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: P
                 />
                 <div>
                   <div className="font-medium text-white">{preset.label}</div>
-                  <div className="text-xs text-slate-400">{preset.carbs}g carbs</div>
+                  <div className="text-xs text-slate-400">
+                    {preset.carbs}g {kind === 'drink' ? 'total' : 'carbs'}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -78,6 +110,8 @@ export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: P
 
       {adding ? (
         <PresetForm
+          kind={kind}
+          carbsLabel={tab.carbsLabel}
           onSave={(data) => {
             onAdd(data)
             setAdding(false)
@@ -90,7 +124,7 @@ export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: P
           onClick={() => setAdding(true)}
           className="rounded-xl border-2 border-dashed border-slate-600 py-3 text-sm font-semibold text-slate-300"
         >
-          + Add preset button
+          {tab.addLabel}
         </button>
       )}
     </div>
@@ -98,10 +132,14 @@ export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: P
 }
 
 function PresetForm({
+  kind,
+  carbsLabel,
   initial,
   onSave,
   onCancel,
 }: {
+  kind: PresetKind
+  carbsLabel: string
   initial?: Preset
   onSave: (data: Omit<Preset, 'id'>) => void
   onCancel: () => void
@@ -120,7 +158,7 @@ function PresetForm({
         type="text"
         value={label}
         onChange={(e) => setLabel(e.target.value)}
-        placeholder="e.g. Energy Gel"
+        placeholder={kind === 'drink' ? 'e.g. Carb Drink Mix' : 'e.g. Energy Gel'}
         className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
       />
       <input
@@ -128,7 +166,7 @@ function PresetForm({
         inputMode="decimal"
         value={carbs}
         onChange={(e) => setCarbs(e.target.value)}
-        placeholder="Carbs per serving (g)"
+        placeholder={carbsLabel}
         className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
       />
       <div className="flex flex-wrap gap-2">
@@ -154,7 +192,7 @@ function PresetForm({
         <button
           type="button"
           disabled={!valid}
-          onClick={() => onSave({ label: label.trim(), carbs: carbsNum, color })}
+          onClick={() => onSave({ label: label.trim(), carbs: carbsNum, color, kind })}
           className="flex-1 rounded-lg bg-emerald-500 py-2 text-sm font-bold text-slate-950 disabled:opacity-40"
         >
           Save

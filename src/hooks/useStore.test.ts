@@ -24,6 +24,10 @@ describe('useStore sessions', () => {
     expect(result.current.activeSession?.entries).toEqual([])
     expect(result.current.activeSession?.currentMileage).toBe(0)
     expect(result.current.activeSession?.endedAt).toBeNull()
+    expect(result.current.activeSession?.drinkSlots).toEqual([
+      { presetId: null, fillId: 0 },
+      { presetId: null, fillId: 0 },
+    ])
   })
 
   it('ending a session stamps endedAt and clears the active session', () => {
@@ -166,16 +170,98 @@ describe('useStore entries', () => {
     })
     expect(hook.result.current.activeSession!.currentMileage).toBe(17)
   })
+
+  it('logs a pending entry with a null carb count', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.addEntry(id, {
+        timestamp: 1000,
+        mileage: 3,
+        label: 'Aid station mystery snack',
+        carbs: null,
+        presetId: null,
+      })
+    })
+    expect(hook.result.current.activeSession!.entries[0].carbs).toBeNull()
+  })
+})
+
+describe('useStore drink slots', () => {
+  function startedStore() {
+    const hook = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = hook.result.current.startSession()
+    })
+    return { hook, id }
+  }
+
+  it('assigns a preset to a slot and bumps fillId from its starting value', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.assignDrinkSlot(id, 0, 'preset-water')
+    })
+    expect(hook.result.current.activeSession!.drinkSlots[0]).toEqual({
+      presetId: 'preset-water',
+      fillId: 1,
+    })
+    // The other slot is untouched.
+    expect(hook.result.current.activeSession!.drinkSlots[1]).toEqual({
+      presetId: null,
+      fillId: 0,
+    })
+  })
+
+  it('bumps fillId again on reassignment, so a refill resets independent of past entries', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.assignDrinkSlot(id, 1, 'preset-carb-mix')
+    })
+    act(() => {
+      hook.result.current.assignDrinkSlot(id, 1, 'preset-carb-mix')
+    })
+    expect(hook.result.current.activeSession!.drinkSlots[1].fillId).toBe(2)
+  })
+
+  it('clearing a slot removes the preset but keeps fillId', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.assignDrinkSlot(id, 0, 'preset-water')
+    })
+    act(() => {
+      hook.result.current.clearDrinkSlot(id, 0)
+    })
+    expect(hook.result.current.activeSession!.drinkSlots[0]).toEqual({
+      presetId: null,
+      fillId: 1,
+    })
+  })
+
+  it('addPresetWithId uses the caller-supplied id, so it can be assigned in the same action', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.addPresetWithId({
+        id: 'custom-drink-1',
+        label: 'Electrolyte Mix',
+        carbs: 45,
+        color: '#38bdf8',
+        kind: 'drink',
+      })
+      hook.result.current.assignDrinkSlot(id, 0, 'custom-drink-1')
+    })
+    expect(hook.result.current.presets.map((p) => p.id)).toContain('custom-drink-1')
+    expect(hook.result.current.activeSession!.drinkSlots[0].presetId).toBe('custom-drink-1')
+  })
 })
 
 describe('useStore presets', () => {
   it('adds a preset with a generated id', () => {
     const { result } = renderHook(() => useStore())
     act(() => {
-      result.current.addPreset({ label: 'Waffle', carbs: 21, color: '#22c55e' })
+      result.current.addPreset({ label: 'Waffle', carbs: 21, color: '#22c55e', kind: 'item' })
     })
     const added = result.current.presets.at(-1)!
-    expect(added).toMatchObject({ label: 'Waffle', carbs: 21, color: '#22c55e' })
+    expect(added).toMatchObject({ label: 'Waffle', carbs: 21, color: '#22c55e', kind: 'item' })
     expect(added.id).toBeTruthy()
   })
 
@@ -201,7 +287,7 @@ describe('useStore presets', () => {
   it('persists preset edits across remounts', () => {
     const first = renderHook(() => useStore())
     act(() => {
-      first.result.current.addPreset({ label: 'Rice Cake', carbs: 18, color: '#14b8a6' })
+      first.result.current.addPreset({ label: 'Rice Cake', carbs: 18, color: '#14b8a6', kind: 'item' })
     })
     first.unmount()
 

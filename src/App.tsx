@@ -7,9 +7,13 @@ import { PresetManager } from './components/PresetManager'
 import { History } from './components/History'
 import { SessionDetail } from './components/SessionDetail'
 import { Toast } from './components/Toast'
+import { drinkDeltaCarbs, slotPercent } from './lib/drinks'
+import { uid } from './lib/storage'
 import type { Preset } from './lib/types'
 
 type Screen = 'home' | 'presets' | 'history' | 'session-detail'
+
+const DRINK_SLOT_COLORS: [string, string] = ['#38bdf8', '#3b82f6']
 
 function App() {
   const store = useStore()
@@ -39,7 +43,7 @@ function App() {
 
   const handleLogCustom = (data: {
     label: string
-    carbs: number
+    carbs: number | null
     timestamp: number
     mileage: number
   }) => {
@@ -54,7 +58,60 @@ function App() {
     if (data.mileage !== store.activeSession.currentMileage) {
       store.setSessionMileage(store.activeSession.id, data.mileage)
     }
-    flash(`Logged ${data.label} · ${Math.round(data.carbs)}g carbs`)
+    flash(
+      data.carbs === null
+        ? `Logged ${data.label} · add carbs later`
+        : `Logged ${data.label} · ${Math.round(data.carbs)}g carbs`,
+    )
+  }
+
+  const handleAssignDrink = (slotIndex: 0 | 1, presetId: string) => {
+    if (!store.activeSession) return
+    store.assignDrinkSlot(store.activeSession.id, slotIndex, presetId)
+  }
+
+  const handleCreateAndAssignDrink = (
+    slotIndex: 0 | 1,
+    data: { label: string; carbs: number },
+  ) => {
+    if (!store.activeSession) return
+    const preset: Preset = {
+      id: uid(),
+      label: data.label,
+      carbs: data.carbs,
+      color: DRINK_SLOT_COLORS[slotIndex],
+      kind: 'drink',
+    }
+    store.addPresetWithId(preset)
+    store.assignDrinkSlot(store.activeSession.id, slotIndex, preset.id)
+  }
+
+  const handleClearDrink = (slotIndex: 0 | 1) => {
+    if (!store.activeSession) return
+    store.clearDrinkSlot(store.activeSession.id, slotIndex)
+  }
+
+  const handleLogDrink = (slotIndex: 0 | 1, targetPercent: number) => {
+    const session = store.activeSession
+    if (!session) return
+    const slot = session.drinkSlots[slotIndex]
+    const preset = store.presets.find((p) => p.id === slot.presetId)
+    if (!preset) return
+
+    const currentPercent = slotPercent(session, slotIndex)
+    const delta = Math.round(targetPercent) - currentPercent
+    if (delta <= 0) return
+
+    const carbs = drinkDeltaCarbs(preset.carbs, delta)
+    store.addEntry(session.id, {
+      timestamp: Date.now(),
+      mileage: session.currentMileage,
+      label: preset.label,
+      carbs,
+      presetId: preset.id,
+      drink: { slot: slotIndex, fillId: slot.fillId, percent: delta },
+    })
+    flash(`Logged ${preset.label} +${delta}% · ${Math.round(carbs)}g carbs`)
   }
 
   const handleEndSession = () => {
@@ -87,6 +144,10 @@ function App() {
             }
             onManagePresets={() => setScreen('presets')}
             onEndSession={handleEndSession}
+            onAssignDrink={handleAssignDrink}
+            onCreateAndAssignDrink={handleCreateAndAssignDrink}
+            onClearDrink={handleClearDrink}
+            onLogDrink={handleLogDrink}
           />
         ) : (
           <StartScreen onStart={store.startSession} />
