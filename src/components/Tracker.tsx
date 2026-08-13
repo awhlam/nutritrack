@@ -13,6 +13,7 @@ interface TrackerProps {
   presets: Preset[]
   now: number
   onLogPreset: (preset: Preset) => void
+  onCreatePreset: (data: { label: string; carbs: number; color: string }) => void
   onLogCustom: (data: {
     label: string
     carbs: number | null
@@ -23,6 +24,7 @@ interface TrackerProps {
   onDeleteEntry: (entryId: string) => void
   onMileageChange: (mileage: number) => void
   onManagePresets: () => void
+  onHistory: () => void
   onEndSession: () => void
   onAssignDrink: (slotIndex: 0 | 1, presetId: string) => void
   onCreateAndAssignDrink: (slotIndex: 0 | 1, data: { label: string; carbs: number }) => void
@@ -35,11 +37,13 @@ export function Tracker({
   presets,
   now,
   onLogPreset,
+  onCreatePreset,
   onLogCustom,
   onUpdateEntry,
   onDeleteEntry,
   onMileageChange,
   onManagePresets,
+  onHistory,
   onEndSession,
   onAssignDrink,
   onCreateAndAssignDrink,
@@ -58,13 +62,22 @@ export function Tracker({
         <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-300">
           In Progress
         </span>
-        <button
-          type="button"
-          onClick={onEndSession}
-          className="rounded-full bg-red-500/15 px-4 py-1.5 text-sm font-semibold text-red-400 active:bg-red-500/25"
-        >
-          End
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onHistory}
+            className="rounded-full bg-slate-800 px-4 py-1.5 text-sm font-semibold text-slate-300 active:bg-slate-700"
+          >
+            History
+          </button>
+          <button
+            type="button"
+            onClick={onEndSession}
+            className="rounded-full bg-red-500/15 px-4 py-1.5 text-sm font-semibold text-red-400 active:bg-red-500/25"
+          >
+            End
+          </button>
+        </div>
       </div>
 
       <StatBar session={session} now={now} />
@@ -79,12 +92,16 @@ export function Tracker({
         onLog={onLogDrink}
       />
 
-      <PresetGrid
-        presets={itemPresets}
-        onLog={onLogPreset}
-        onCustom={() => setShowCustom(true)}
-        onManage={onManagePresets}
-      />
+      <PresetGrid presets={itemPresets} onLog={onLogPreset} onCreate={onCreatePreset} onManage={onManagePresets} />
+
+      <button
+        type="button"
+        onClick={() => setShowCustom(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-600 bg-slate-800/80 py-4 text-base font-semibold text-slate-200 active:bg-slate-700"
+      >
+        <span className="text-xl leading-none">✏️</span>
+        Custom Entry
+      </button>
 
       <div className="flex-1">
         <h2 className="mb-1 mt-2 text-sm font-semibold uppercase tracking-wide text-slate-400">

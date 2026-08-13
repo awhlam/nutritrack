@@ -4,23 +4,23 @@ A single-page web app for tracking nutrition consumption during runs and bike
 rides — designed for big, glove/sweat-friendly buttons you can hit mid-activity.
 
 <p align="center">
-  <img src="docs/screenshots/tracker.png" alt="Tracker screen showing 2h 58m elapsed, 195g total carbs, 66g/hr, a mileage stepper, four large preset buttons and the entry log" width="270">
-  <img src="docs/screenshots/edit-entry.png" alt="Editing a past entry's time and mileage" width="270">
-  <img src="docs/screenshots/summary.png" alt="Finished session summary with export buttons and the full entry log" width="270">
+  <img src="docs/screenshots/tracker.png" alt="Tracker screen showing 1h 32m elapsed, 64g total carbs, drink bottle slots for Water and Carb Drink Mix, item preset slots for Energy Gel and Rice Cake plus two empty tap-to-add slots, and a full-width Custom Entry button" width="330">
 </p>
 <p align="center">
-  <em>Logging mid-ride &middot; correcting a past entry &middot; the end-of-ride summary</em>
+  <em>The app opens straight into this — no start screen to tap through first</em>
 </p>
 
 ## Features
 
-- **One-tap logging** — preset buttons for the nutrition you bring (e.g. "Energy Gel, 25g carbs"). Tapping one instantly logs the time and your current mileage.
+- **Opens straight into tracking** — no start screen to tap through; a session begins the instant you open the app, and reopening later resumes whatever's still in progress.
+- **One-tap logging** — preset buttons for the nutrition you bring. Tapping one instantly logs the time and your current mileage.
+- **Tap-to-add preset slots** — the button grid always shows a few empty slots alongside your configured ones; tap an empty one to define a new preset (label, carbs, color) right there.
 - **Two drink bottle slots** — assign what's in each bottle, then log how much you've drunk in quarters (¼ / ½ / ¾ / Empty) or an exact percent. Each log only counts the amount consumed *since* the last one — no double-counting — and progress is derived from the log itself, so editing or deleting an entry can't leave it out of sync.
-- **Custom entries** — log anything unplanned with a label and carb count, or log it now and fill in the carbs later (e.g. an aid-station snack you can't identify mid-stride).
+- **Custom entries** — a distinct full-width button (not just another preset tile) for logging anything unplanned with a label and carb count, or logging it now and filling in the carbs later (e.g. an aid-station snack you can't identify mid-stride).
 - **Mileage tracking** — a big +/− stepper in whole miles (tap the number to type an exact value), snapshotted onto each entry you log.
 - **Live stats** — running totals for elapsed time, total carbs consumed, and carbs/hour, updated in real time. Entries still missing a carb count are flagged and excluded from the totals until filled in.
 - **Editable log** — every entry's time, mileage, and carb count can be corrected after the fact; entries can also be deleted.
-- **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks.
+- **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks, reachable from the grid or via a History button in the tracker header.
 - **History** — past activities are saved locally so you can review them later.
 - **Export** — at the end of a session, export the log as a plain-text summary (`.txt`) or a shareable image (`.png`).
 
@@ -36,17 +36,30 @@ Finishing a bottle and swapping in a new one resets that slot's progress
 without touching your history.
 
 <p align="center">
-  <img src="docs/screenshots/drinks.png" alt="Two drink bottle slots mid-ride: Water at 50% and Carb Drink Mix at 50% with 30g of 60g consumed, quarter and custom-percent logging buttons" width="330">
+  <img src="docs/screenshots/drinks.png" alt="Two drink bottle slots mid-ride: Water at 50% and Carb Drink Mix at 25% with 13g of 50g consumed, quarter and custom-percent logging buttons" width="330">
 </p>
 
 ### Presets and history
 
-Set up a button for each thing you carry, with its carb count, then review past
-activities from the history list.
+Item presets live in a small grid with a couple of empty "Tap to add" slots
+built in, so setting up what you carry doesn't require a trip to the manager
+first. The manager itself splits items and drinks into separate tabs for
+editing or deleting.
 
 <p align="center">
-  <img src="docs/screenshots/presets.png" alt="Preset button manager listing Energy Gel, Banana, Chews and Sports Drink with edit and delete actions" width="330">
+  <img src="docs/screenshots/presets.png" alt="Preset manager Items tab listing Energy Gel and Rice Cake with edit and delete actions, plus an Add preset button" width="330">
   <img src="docs/screenshots/history.png" alt="History list of four past activities with total carbs and carbs per hour" width="330">
+</p>
+
+### Editing entries
+
+Every logged entry — time, mileage, and carb count — can be corrected after
+the fact, including filling in a carb count you deliberately skipped at the
+time.
+
+<p align="center">
+  <img src="docs/screenshots/edit-entry.png" alt="Editing a past entry's time and mileage" width="330">
+  <img src="docs/screenshots/summary.png" alt="Finished session summary with export buttons and the full entry log" width="330">
 </p>
 
 ### Export
@@ -99,9 +112,11 @@ npm run lint     # lint
 
 [Vitest](https://vitest.dev) covers the fueling math and formatting in
 `src/lib/format.test.ts`, drink-slot percent derivation in
-`src/lib/drinks.test.ts`, session/entry/preset/drink-slot state in
-`src/hooks/useStore.test.ts`, and components (mileage stepper, drink slots,
-start screen) in `src/components/*.test.tsx`.
+`src/lib/drinks.test.ts`, the versioned preset-default migration in
+`src/lib/storage.test.ts`, session/entry/preset/drink-slot state (including
+the auto-start behavior) in `src/hooks/useStore.test.ts` and
+`src/App.test.tsx`, and components (mileage stepper, drink slots, preset
+grid) in `src/components/*.test.tsx`.
 
 ## Deployment
 

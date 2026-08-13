@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { PRESET_COLORS } from '../lib/colors'
 import type { Preset, PresetKind } from '../lib/types'
 
 interface PresetManagerProps {
@@ -8,8 +9,6 @@ interface PresetManagerProps {
   onDelete: (id: string) => void
   onClose: () => void
 }
-
-const COLORS = ['#f59e0b', '#eab308', '#f97316', '#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#14b8a6']
 
 const TABS: { kind: PresetKind; label: string; addLabel: string; carbsLabel: string }[] = [
   { kind: 'item', label: 'Items', addLabel: '+ Add preset button', carbsLabel: 'Carbs per serving (g)' },
@@ -146,7 +145,7 @@ function PresetForm({
 }) {
   const [label, setLabel] = useState(initial?.label ?? '')
   const [carbs, setCarbs] = useState(initial ? String(initial.carbs) : '')
-  const [color, setColor] = useState(initial?.color ?? COLORS[0])
+  const [color, setColor] = useState(initial?.color ?? PRESET_COLORS[0])
 
   const carbsNum = parseFloat(carbs)
   const valid = label.trim().length > 0 && !Number.isNaN(carbsNum) && carbsNum >= 0
@@ -170,7 +169,7 @@ function PresetForm({
         className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
       />
       <div className="flex flex-wrap gap-2">
-        {COLORS.map((c) => (
+        {PRESET_COLORS.map((c) => (
           <button
             key={c}
             type="button"
