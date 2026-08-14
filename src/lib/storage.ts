@@ -6,9 +6,9 @@ const ACTIVE_SESSION_KEY = 'nutritrack:activeSessionId'
 const PRESET_MIGRATION_KEY = 'nutritrack:presetMigrationVersion'
 
 export const DEFAULT_PRESETS: Preset[] = [
-  { id: 'preset-gel', label: 'Energy Gel', carbs: 30, color: '#f59e0b', kind: 'item' },
-  { id: 'preset-water', label: 'Water', carbs: 0, color: '#38bdf8', kind: 'drink' },
-  { id: 'preset-carb-mix', label: 'Carb Drink Mix', carbs: 50, color: '#3b82f6', kind: 'drink' },
+  { id: 'preset-gel', label: 'Energy Gel', carbs: 30, caffeine: 0, color: '#f59e0b', kind: 'item' },
+  { id: 'preset-water', label: 'Water', carbs: 0, caffeine: 0, color: '#38bdf8', kind: 'drink' },
+  { id: 'preset-carb-mix', label: 'Carb Drink Mix', carbs: 50, caffeine: 0, color: '#3b82f6', kind: 'drink' },
 ]
 
 /**
@@ -52,7 +52,7 @@ function write<T>(key: string, value: T) {
 
 /** Backfills fields added after a user may already have data saved, so old localStorage keeps working. */
 function normalizePreset(preset: Preset): Preset {
-  return { ...preset, kind: preset.kind ?? 'item' }
+  return { ...preset, kind: preset.kind ?? 'item', caffeine: preset.caffeine ?? 0 }
 }
 
 function normalizeSession(session: Session): Session {
@@ -61,6 +61,17 @@ function normalizeSession(session: Session): Session {
     ...session,
     name: session.name ?? '',
     drinkSlots: [slots?.[0] ?? emptyDrinkSlot(), slots?.[1] ?? emptyDrinkSlot()],
+    entries: session.entries.map((e) => ({ ...e, caffeine: e.caffeine ?? 0 })),
+    // Backfill for sessions saved before activity tracking existed — including a
+    // stuck-open session, whose most recent entry (or its start time, if none)
+    // is the best guess at when it actually ended.
+    lastActivityAt:
+      session.lastActivityAt ??
+      Math.max(
+        session.startedAt,
+        session.endedAt ?? 0,
+        ...session.entries.map((e) => e.timestamp),
+      ),
   }
 }
 

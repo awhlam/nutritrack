@@ -19,6 +19,14 @@ export function slotPercent(session: Session, slotIndex: 0 | 1): number {
   return Math.min(100, Math.max(0, total))
 }
 
+function proportionalDelta(containerTotal: number, deltaPercent: number): number {
+  return (deltaPercent / 100) * containerTotal
+}
+
 export function drinkDeltaCarbs(containerCarbs: number, deltaPercent: number): number {
-  return (deltaPercent / 100) * containerCarbs
+  return proportionalDelta(containerCarbs, deltaPercent)
+}
+
+export function drinkDeltaCaffeine(containerCaffeine: number, deltaPercent: number): number {
+  return proportionalDelta(containerCaffeine, deltaPercent)
 }

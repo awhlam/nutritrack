@@ -3,7 +3,14 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { PresetGrid } from './PresetGrid'
 import type { Preset } from '../lib/types'
 
-const gel: Preset = { id: 'preset-gel', label: 'Energy Gel', carbs: 30, color: '#f59e0b', kind: 'item' }
+const gel: Preset = {
+  id: 'preset-gel',
+  label: 'Energy Gel',
+  carbs: 30,
+  caffeine: 0,
+  color: '#f59e0b',
+  kind: 'item',
+}
 
 function renderGrid(presets: Preset[] = []) {
   const onLog = vi.fn()
@@ -51,7 +58,34 @@ describe('PresetGrid', () => {
     fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '21' } })
     fireEvent.click(screen.getByText('Add to Grid'))
 
-    expect(onCreate).toHaveBeenCalledWith({ label: 'Waffle', carbs: 21, color: expect.any(String) })
+    expect(onCreate).toHaveBeenCalledWith({
+      label: 'Waffle',
+      carbs: 21,
+      caffeine: 0,
+      color: expect.any(String),
+    })
+  })
+
+  it('shows a caffeine badge on a tile only when the preset has caffeine', () => {
+    renderGrid([gel, { ...gel, id: 'p2', label: 'Caffeinated Gel', caffeine: 25 }])
+    expect(screen.getByText('+25mg caffeine')).toBeTruthy()
+  })
+
+  it('creating a preset with caffeine passes it through', () => {
+    const { onCreate } = renderGrid([gel])
+    fireEvent.click(screen.getAllByText('Tap to add')[0])
+    fireEvent.change(screen.getByPlaceholderText('e.g. Rice Cake'), { target: { value: 'Waffle' } })
+    fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '21' } })
+    fireEvent.change(screen.getByPlaceholderText('0 (optional)'), {
+      target: { value: '15' },
+    })
+    fireEvent.click(screen.getByText('Add to Grid'))
+    expect(onCreate).toHaveBeenCalledWith({
+      label: 'Waffle',
+      carbs: 21,
+      caffeine: 15,
+      color: expect.any(String),
+    })
   })
 
   it('opens the manager when asked', () => {

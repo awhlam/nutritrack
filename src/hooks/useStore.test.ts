@@ -1,11 +1,16 @@
 import { act } from 'react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useStore } from './useStore'
 import { DEFAULT_PRESETS } from '../lib/storage'
+import { INACTIVITY_TIMEOUT_MS } from '../lib/session'
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('useStore sessions', () => {
@@ -100,6 +105,7 @@ describe('useStore entries', () => {
         mileage: 6,
         label: 'Energy Gel',
         carbs: 25,
+        caffeine: 25,
         presetId: 'preset-gel',
       })
     })
@@ -110,6 +116,7 @@ describe('useStore entries', () => {
       mileage: 6,
       label: 'Energy Gel',
       carbs: 25,
+      caffeine: 25,
       presetId: 'preset-gel',
     })
     expect(entries[0].id).toBeTruthy()
@@ -124,6 +131,7 @@ describe('useStore entries', () => {
         mileage: 2,
         label: 'Banana',
         carbs: 27,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -146,6 +154,7 @@ describe('useStore entries', () => {
         mileage: 1,
         label: 'Gel',
         carbs: 25,
+        caffeine: 0,
         presetId: null,
       })
       hook.result.current.addEntry(id, {
@@ -153,6 +162,7 @@ describe('useStore entries', () => {
         mileage: 2,
         label: 'Chews',
         carbs: 24,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -180,6 +190,7 @@ describe('useStore entries', () => {
         mileage: 3,
         label: 'Aid station mystery snack',
         carbs: null,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -264,6 +275,7 @@ describe('useStore drink slots', () => {
         id: 'custom-drink-1',
         label: 'Electrolyte Mix',
         carbs: 45,
+        caffeine: 0,
         color: '#38bdf8',
         kind: 'drink',
       })
@@ -274,14 +286,141 @@ describe('useStore drink slots', () => {
   })
 })
 
+describe('useStore session times', () => {
+  function startedStore() {
+    const hook = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = hook.result.current.startSession()
+    })
+    return { hook, id }
+  }
+
+  it('edits the start time of the active session', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.setSessionStartedAt(id, 5000)
+    })
+    expect(hook.result.current.activeSession!.startedAt).toBe(5000)
+  })
+
+  it('edits the end time of an ended session', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.endSession(id)
+    })
+    act(() => {
+      hook.result.current.setSessionEndedAt(id, 9000)
+    })
+    expect(hook.result.current.sessions.find((s) => s.id === id)?.endedAt).toBe(9000)
+  })
+
+  it('ending a session accepts an explicit end time instead of always using now', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.endSession(id, 12345)
+    })
+    expect(hook.result.current.sessions.find((s) => s.id === id)?.endedAt).toBe(12345)
+  })
+})
+
+describe('useStore auto-end on inactivity', () => {
+  it('auto-ends the active session after 6h of inactivity, using last activity as the end time', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS)
+    })
+    expect(result.current.activeSession).toBeNull()
+    const ended = result.current.sessions.find((s) => s.id === id)
+    expect(ended?.endedAt).toBe(0)
+    expect(result.current.autoEndedSessionId).toBe(id)
+  })
+
+  it('does not auto-end a session that had activity inside the last 6h', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS - 60_000)
+    })
+    act(() => {
+      result.current.addEntry(id, {
+        timestamp: Date.now(),
+        mileage: 1,
+        label: 'Gel',
+        carbs: 25,
+        caffeine: 0,
+        presetId: null,
+      })
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS - 60_000)
+    })
+    expect(result.current.activeSession).not.toBeNull()
+  })
+
+  it('ends an already-stale session immediately on mount, without waiting for the next interval tick', () => {
+    const staleSession = {
+      id: 's1',
+      name: '',
+      startedAt: 0,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+      lastActivityAt: 0,
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([staleSession]))
+    localStorage.setItem('nutritrack:activeSessionId', JSON.stringify('s1'))
+
+    vi.useFakeTimers()
+    vi.setSystemTime(INACTIVITY_TIMEOUT_MS + 1)
+    const { result } = renderHook(() => useStore())
+    expect(result.current.activeSession).toBeNull()
+    expect(result.current.sessions[0].endedAt).toBe(0)
+    expect(result.current.autoEndedSessionId).toBe('s1')
+  })
+
+  it('clearAutoEndedSession resets it back to null', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS)
+    })
+    expect(result.current.autoEndedSessionId).toBe(id)
+    act(() => {
+      result.current.clearAutoEndedSession()
+    })
+    expect(result.current.autoEndedSessionId).toBeNull()
+  })
+})
+
 describe('useStore presets', () => {
   it('adds a preset with a generated id', () => {
     const { result } = renderHook(() => useStore())
     act(() => {
-      result.current.addPreset({ label: 'Waffle', carbs: 21, color: '#22c55e', kind: 'item' })
+      result.current.addPreset({ label: 'Waffle', carbs: 21, caffeine: 0, color: '#22c55e', kind: 'item' })
     })
     const added = result.current.presets.at(-1)!
-    expect(added).toMatchObject({ label: 'Waffle', carbs: 21, color: '#22c55e', kind: 'item' })
+    expect(added).toMatchObject({ label: 'Waffle', carbs: 21, caffeine: 0, color: '#22c55e', kind: 'item' })
     expect(added.id).toBeTruthy()
   })
 
@@ -307,7 +446,7 @@ describe('useStore presets', () => {
   it('persists preset edits across remounts', () => {
     const first = renderHook(() => useStore())
     act(() => {
-      first.result.current.addPreset({ label: 'Rice Cake', carbs: 18, color: '#14b8a6', kind: 'item' })
+      first.result.current.addPreset({ label: 'Rice Cake', carbs: 18, caffeine: 0, color: '#14b8a6', kind: 'item' })
     })
     first.unmount()
 

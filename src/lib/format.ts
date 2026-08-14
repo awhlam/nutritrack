@@ -61,6 +61,14 @@ export function formatCarbs(carbs: number | null): string {
   return carbs === null ? '?' : `${Math.round(carbs)}g`
 }
 
+export function totalCaffeine(entries: Entry[]): number {
+  return entries.reduce((sum, e) => sum + e.caffeine, 0)
+}
+
+export function formatCaffeine(caffeine: number): string {
+  return `${Math.round(caffeine)}mg`
+}
+
 const MIN_ELAPSED_FOR_RATE_MS = 60_000
 
 export function carbsPerHour(session: Session, now: number): number | null {
@@ -84,6 +92,7 @@ export function buildTextExport(session: Session): string {
   const end = session.endedAt ?? Date.now()
   const duration = formatDuration(end - session.startedAt)
   const carbs = totalCarbs(session.entries)
+  const caffeine = totalCaffeine(session.entries)
   const perHour = carbsPerHour(session, end)
   const pending = pendingCarbsCount(session.entries)
 
@@ -92,11 +101,12 @@ export function buildTextExport(session: Session): string {
   lines.push('')
   lines.push(`Duration:       ${duration}`)
   lines.push(`Total Carbs:    ${Math.round(carbs)} g${pending > 0 ? ' (excludes pending entries below)' : ''}`)
+  lines.push(`Total Caffeine: ${Math.round(caffeine)} mg`)
   lines.push(`Avg Carbs/hr:   ${perHour === null ? '—' : `${Math.round(perHour)} g/hr`}`)
   lines.push(`Entries:        ${session.entries.length}`)
   lines.push('')
-  lines.push('Time       Mileage   Item                      Carbs')
-  lines.push('-'.repeat(58))
+  lines.push('Time       Mileage   Item                      Carbs    Caffeine')
+  lines.push('-'.repeat(66))
 
   const sorted = [...session.entries].sort((a, b) => a.timestamp - b.timestamp)
   for (const e of sorted) {
@@ -104,7 +114,8 @@ export function buildTextExport(session: Session): string {
     const mile = formatMileage(e.mileage).padEnd(9)
     const percentSuffix = e.drink ? ` (+${e.drink.percent}%)` : ''
     const label = `${e.label}${percentSuffix}`.padEnd(25).slice(0, 25)
-    lines.push(`${time} ${mile} ${label} ${formatCarbs(e.carbs)}`)
+    const carbsStr = formatCarbs(e.carbs).padEnd(8)
+    lines.push(`${time} ${mile} ${label} ${carbsStr} ${formatCaffeine(e.caffeine)}`)
   }
 
   lines.push('')

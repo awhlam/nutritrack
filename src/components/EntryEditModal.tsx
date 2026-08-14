@@ -5,7 +5,12 @@ import type { Entry } from '../lib/types'
 
 interface EntryEditModalProps {
   entry: Entry
-  onSave: (patch: { timestamp: number; mileage: number | null; carbs: number | null }) => void
+  onSave: (patch: {
+    timestamp: number
+    mileage: number | null
+    carbs: number | null
+    caffeine: number
+  }) => void
   onDelete: () => void
   onClose: () => void
 }
@@ -16,14 +21,17 @@ export function EntryEditModal({ entry, onSave, onDelete, onClose }: EntryEditMo
     entry.mileage === null ? '' : String(entry.mileage),
   )
   const [carbs, setCarbs] = useState(entry.carbs === null ? '' : String(entry.carbs))
+  const [caffeine, setCaffeine] = useState(entry.caffeine ? String(entry.caffeine) : '')
 
   const handleSave = () => {
     const mileageNum = parseFloat(mileage)
     const carbsNum = parseFloat(carbs)
+    const caffeineNum = parseFloat(caffeine)
     onSave({
       timestamp,
       mileage: mileage.trim() === '' || Number.isNaN(mileageNum) ? null : mileageNum,
       carbs: carbs.trim() === '' || Number.isNaN(carbsNum) ? null : carbsNum,
+      caffeine: caffeine.trim() === '' || Number.isNaN(caffeineNum) ? 0 : caffeineNum,
     })
   }
 
@@ -41,6 +49,20 @@ export function EntryEditModal({ entry, onSave, onDelete, onClose }: EntryEditMo
             value={carbs}
             onChange={(e) => setCarbs(e.target.value)}
             placeholder="?"
+            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-400">
+            Caffeine (mg)
+          </label>
+          <input
+            type="number"
+            inputMode="decimal"
+            value={caffeine}
+            onChange={(e) => setCaffeine(e.target.value)}
+            placeholder="0"
             className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
           />
         </div>

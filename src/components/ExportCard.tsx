@@ -1,11 +1,13 @@
 import { forwardRef } from 'react'
 import {
   carbsPerHour,
+  formatCaffeine,
   formatCarbs,
   formatClockTimeShort,
   formatDuration,
   formatMileage,
   formatRate,
+  totalCaffeine,
   totalCarbs,
 } from '../lib/format'
 import type { Session } from '../lib/types'
@@ -18,6 +20,7 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
   function ExportCard({ session }, ref) {
     const end = session.endedAt ?? Date.now()
     const carbs = totalCarbs(session.entries)
+    const caffeine = totalCaffeine(session.entries)
     const perHour = carbsPerHour(session, end)
     const sorted = [...session.entries].sort((a, b) => a.timestamp - b.timestamp)
     const dateStr = new Date(session.startedAt).toLocaleDateString(undefined, {
@@ -40,9 +43,10 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
           <div className="text-sm text-slate-400">{dateStr}</div>
         </div>
 
-        <div className="mb-5 grid grid-cols-3 gap-2">
+        <div className="mb-5 grid grid-cols-4 gap-2">
           <CardStat label="Duration" value={formatDuration(end - session.startedAt)} />
-          <CardStat label="Total Carbs" value={`${Math.round(carbs)}g`} accent />
+          <CardStat label="Carbs" value={`${Math.round(carbs)}g`} accent />
+          <CardStat label="Caffeine" value={`${Math.round(caffeine)}mg`} />
           <CardStat label="Carbs/hr" value={formatRate(perHour)} />
         </div>
 
@@ -70,10 +74,15 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
                   {e.drink && ` (+${e.drink.percent}%)`}{' '}
                   <span className="text-slate-500">{formatMileage(e.mileage)}</span>
                 </span>
-                <span
-                  className={`shrink-0 font-semibold ${e.carbs === null ? 'text-amber-400' : 'text-emerald-400'}`}
-                >
-                  {formatCarbs(e.carbs)}
+                <span className="flex shrink-0 flex-col items-end">
+                  <span
+                    className={`font-semibold ${e.carbs === null ? 'text-amber-400' : 'text-emerald-400'}`}
+                  >
+                    {formatCarbs(e.carbs)}
+                  </span>
+                  {e.caffeine > 0 && (
+                    <span className="text-[10px] text-slate-500">{formatCaffeine(e.caffeine)}</span>
+                  )}
                 </span>
               </div>
             ))
