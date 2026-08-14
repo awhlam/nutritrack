@@ -35,6 +35,13 @@ function App() {
     }
   }, [activeSession, startSession])
 
+  const { autoEndedSessionId, clearAutoEndedSession } = store
+  useEffect(() => {
+    if (!autoEndedSessionId) return
+    flash('Previous session auto-ended after 6h of inactivity')
+    clearAutoEndedSession()
+  }, [autoEndedSessionId, clearAutoEndedSession, flash])
+
   const detailSession = store.sessions.find((s) => s.id === detailSessionId) ?? null
 
   const handleLogPreset = (preset: Preset) => {
@@ -155,6 +162,9 @@ function App() {
             store.setSessionMileage(store.activeSession!.id, mileage)
           }
           onNameChange={(name) => store.setSessionName(store.activeSession!.id, name)}
+          onStartedAtChange={(startedAt) =>
+            store.setSessionStartedAt(store.activeSession!.id, startedAt)
+          }
           onManagePresets={() => setScreen('presets')}
           onHistory={() => setScreen('history')}
           onEndSession={handleEndSession}
@@ -193,6 +203,8 @@ function App() {
           onUpdateEntry={(entryId, patch) => store.updateEntry(detailSession.id, entryId, patch)}
           onDeleteEntry={(entryId) => store.deleteEntry(detailSession.id, entryId)}
           onNameChange={(name) => store.setSessionName(detailSession.id, name)}
+          onStartedAtChange={(startedAt) => store.setSessionStartedAt(detailSession.id, startedAt)}
+          onEndedAtChange={(endedAt) => store.setSessionEndedAt(detailSession.id, endedAt)}
           onDeleteSession={() => {
             if (!window.confirm('Delete this session and all its entries?')) return
             store.deleteSession(detailSession.id)

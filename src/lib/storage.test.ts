@@ -116,4 +116,57 @@ describe('loadSessions', () => {
     localStorage.setItem('nutritrack:sessions', JSON.stringify([named]))
     expect(loadSessions()[0].name).toBe('Boston Marathon')
   })
+
+  it('backfills lastActivityAt from the most recent entry, for sessions saved before activity tracking existed', () => {
+    const oldSession = {
+      id: 's1',
+      name: '',
+      startedAt: 1000,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [{ id: 'e1', timestamp: 5000, mileage: 1, label: 'Gel', carbs: 25, presetId: null }],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+      // no `lastActivityAt` field — simulates data saved before this feature existed
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([oldSession]))
+    expect(loadSessions()[0].lastActivityAt).toBe(5000)
+  })
+
+  it('backfills lastActivityAt from startedAt when there are no entries', () => {
+    const oldSession = {
+      id: 's1',
+      name: '',
+      startedAt: 1000,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([oldSession]))
+    expect(loadSessions()[0].lastActivityAt).toBe(1000)
+  })
+
+  it('preserves an existing lastActivityAt', () => {
+    const session = {
+      id: 's1',
+      name: '',
+      startedAt: 1000,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+      lastActivityAt: 4242,
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([session]))
+    expect(loadSessions()[0].lastActivityAt).toBe(4242)
+  })
 })

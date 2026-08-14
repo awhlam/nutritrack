@@ -14,7 +14,7 @@ describe('App startup', () => {
     render(<App />)
     // The tracker (elapsed/carbs stats, End button) should appear on its own.
     await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
-    expect(screen.queryByText(/start/i)).toBeNull()
+    expect(screen.queryByRole('button', { name: /^start$/i })).toBeNull()
   })
 
   it('resumes the existing active session instead of starting a second one', async () => {

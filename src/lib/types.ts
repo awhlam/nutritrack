@@ -42,4 +42,6 @@ export interface Session {
   currentMileage: number
   entries: Entry[]
   drinkSlots: [DrinkSlot, DrinkSlot]
+  /** Bumped on start and on every entry/edit; used to auto-end a session left running with no activity. */
+  lastActivityAt: number
 }

@@ -1,11 +1,16 @@
 import { act } from 'react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useStore } from './useStore'
 import { DEFAULT_PRESETS } from '../lib/storage'
+import { INACTIVITY_TIMEOUT_MS } from '../lib/session'
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('useStore sessions', () => {
@@ -271,6 +276,132 @@ describe('useStore drink slots', () => {
     })
     expect(hook.result.current.presets.map((p) => p.id)).toContain('custom-drink-1')
     expect(hook.result.current.activeSession!.drinkSlots[0].presetId).toBe('custom-drink-1')
+  })
+})
+
+describe('useStore session times', () => {
+  function startedStore() {
+    const hook = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = hook.result.current.startSession()
+    })
+    return { hook, id }
+  }
+
+  it('edits the start time of the active session', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.setSessionStartedAt(id, 5000)
+    })
+    expect(hook.result.current.activeSession!.startedAt).toBe(5000)
+  })
+
+  it('edits the end time of an ended session', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.endSession(id)
+    })
+    act(() => {
+      hook.result.current.setSessionEndedAt(id, 9000)
+    })
+    expect(hook.result.current.sessions.find((s) => s.id === id)?.endedAt).toBe(9000)
+  })
+
+  it('ending a session accepts an explicit end time instead of always using now', () => {
+    const { hook, id } = startedStore()
+    act(() => {
+      hook.result.current.endSession(id, 12345)
+    })
+    expect(hook.result.current.sessions.find((s) => s.id === id)?.endedAt).toBe(12345)
+  })
+})
+
+describe('useStore auto-end on inactivity', () => {
+  it('auto-ends the active session after 6h of inactivity, using last activity as the end time', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS)
+    })
+    expect(result.current.activeSession).toBeNull()
+    const ended = result.current.sessions.find((s) => s.id === id)
+    expect(ended?.endedAt).toBe(0)
+    expect(result.current.autoEndedSessionId).toBe(id)
+  })
+
+  it('does not auto-end a session that had activity inside the last 6h', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS - 60_000)
+    })
+    act(() => {
+      result.current.addEntry(id, {
+        timestamp: Date.now(),
+        mileage: 1,
+        label: 'Gel',
+        carbs: 25,
+        presetId: null,
+      })
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS - 60_000)
+    })
+    expect(result.current.activeSession).not.toBeNull()
+  })
+
+  it('ends an already-stale session immediately on mount, without waiting for the next interval tick', () => {
+    const staleSession = {
+      id: 's1',
+      name: '',
+      startedAt: 0,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+      lastActivityAt: 0,
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([staleSession]))
+    localStorage.setItem('nutritrack:activeSessionId', JSON.stringify('s1'))
+
+    vi.useFakeTimers()
+    vi.setSystemTime(INACTIVITY_TIMEOUT_MS + 1)
+    const { result } = renderHook(() => useStore())
+    expect(result.current.activeSession).toBeNull()
+    expect(result.current.sessions[0].endedAt).toBe(0)
+    expect(result.current.autoEndedSessionId).toBe('s1')
+  })
+
+  it('clearAutoEndedSession resets it back to null', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.advanceTimersByTime(INACTIVITY_TIMEOUT_MS)
+    })
+    expect(result.current.autoEndedSessionId).toBe(id)
+    act(() => {
+      result.current.clearAutoEndedSession()
+    })
+    expect(result.current.autoEndedSessionId).toBeNull()
   })
 })
 

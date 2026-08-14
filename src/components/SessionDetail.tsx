@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { StatBar } from './StatBar'
 import { SessionNameField } from './SessionNameField'
+import { SessionTimeField } from './SessionTimeField'
 import { EntryList } from './EntryList'
 import { EntryEditModal } from './EntryEditModal'
 import { ExportPanel } from './ExportPanel'
-import { formatClockTimeShort } from '../lib/format'
 import type { Entry, Session } from '../lib/types'
 
 interface SessionDetailProps {
@@ -14,6 +14,8 @@ interface SessionDetailProps {
   onDeleteEntry: (entryId: string) => void
   onDeleteSession: () => void
   onNameChange: (name: string) => void
+  onStartedAtChange: (startedAt: number) => void
+  onEndedAtChange: (endedAt: number) => void
   onClose: () => void
 }
 
@@ -24,6 +26,8 @@ export function SessionDetail({
   onDeleteEntry,
   onDeleteSession,
   onNameChange,
+  onStartedAtChange,
+  onEndedAtChange,
   onClose,
 }: SessionDetailProps) {
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
@@ -40,9 +44,12 @@ export function SessionDetail({
               year: 'numeric',
             })}
           </h1>
-          <p className="text-xs text-slate-400">
-            Started {formatClockTimeShort(session.startedAt)}
-          </p>
+          <div className="flex gap-3">
+            <SessionTimeField label="Started" timestamp={session.startedAt} onChange={onStartedAtChange} />
+            {session.endedAt !== null && (
+              <SessionTimeField label="Ended" timestamp={session.endedAt} onChange={onEndedAtChange} />
+            )}
+          </div>
         </div>
         <button
           type="button"

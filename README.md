@@ -15,6 +15,7 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 ## Features
 
 - **Opens straight into tracking** — no start screen to tap through; a session begins the instant you open the app, and reopening later resumes whatever's still in progress.
+- **Auto-ends forgotten sessions** — if a session sits with no new entries or edits for 6 hours (e.g. you forgot to tap "End"), it's automatically closed using the time of that last activity, and a fresh session starts right up.
 - **Name your event** — tap "+ Name this event" (during the activity or afterward) to label a session, e.g. "Boston Marathon". Shows up in History, on the summary screen, and in both export formats; unnamed sessions just show their date, as before.
 - **One-tap logging** — preset buttons for the nutrition you bring. Tapping one instantly logs the time and your current mileage.
 - **Tap-to-add preset slots** — the button grid always shows a few empty slots alongside your configured ones; tap an empty one to define a new preset (label, carbs, color) right there.
@@ -22,7 +23,7 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 - **Custom entries** — a distinct full-width button (not just another preset tile) for logging anything unplanned with a label and carb count, or logging it now and filling in the carbs later (e.g. an aid-station snack you can't identify mid-stride).
 - **Mileage tracking** — a big +/− stepper in whole miles (tap the number to type an exact value), snapshotted onto each entry you log.
 - **Live stats** — running totals for elapsed time, total carbs consumed, and carbs/hour, updated in real time. Entries still missing a carb count are flagged and excluded from the totals until filled in.
-- **Editable log** — every entry's time, mileage, and carb count can be corrected after the fact; entries can also be deleted.
+- **Editable log** — every entry's time, mileage, and carb count can be corrected after the fact; entries can also be deleted. A session's own start time (and end time, once finished) is editable the same way.
 - **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks, reachable from the grid or via a History button in the tracker header.
 - **History** — past activities are saved locally so you can review them later.
 - **Export** — at the end of a session, export the log as a plain-text summary (`.txt`) or a shareable image (`.png`).
@@ -116,11 +117,14 @@ npm run lint     # lint
 
 [Vitest](https://vitest.dev) covers the fueling math and formatting in
 `src/lib/format.test.ts`, drink-slot percent derivation in
-`src/lib/drinks.test.ts`, the versioned preset-default migration in
-`src/lib/storage.test.ts`, session/entry/preset/drink-slot state (including
-the auto-start behavior) in `src/hooks/useStore.test.ts` and
-`src/App.test.tsx`, and components (mileage stepper, drink slots, preset
-grid) in `src/components/*.test.tsx`.
+`src/lib/drinks.test.ts`, the 6-hour inactivity threshold in
+`src/lib/session.test.ts`, the versioned preset-default migration and
+activity-timestamp backfill in `src/lib/storage.test.ts`,
+session/entry/preset/drink-slot state — including the auto-start and
+auto-end-on-inactivity behavior (using fake timers) — in
+`src/hooks/useStore.test.ts` and `src/App.test.tsx`, and components (mileage
+stepper, drink slots, preset grid, editable session times) in
+`src/components/*.test.tsx`.
 
 ## Deployment
 

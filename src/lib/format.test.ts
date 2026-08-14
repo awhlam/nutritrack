@@ -41,6 +41,7 @@ function session(partial: Partial<Session> = {}): Session {
       { presetId: null, fillId: 0 },
       { presetId: null, fillId: 0 },
     ],
+    lastActivityAt: 0,
     ...partial,
   }
 }

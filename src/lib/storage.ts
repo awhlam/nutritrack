@@ -61,6 +61,16 @@ function normalizeSession(session: Session): Session {
     ...session,
     name: session.name ?? '',
     drinkSlots: [slots?.[0] ?? emptyDrinkSlot(), slots?.[1] ?? emptyDrinkSlot()],
+    // Backfill for sessions saved before activity tracking existed — including a
+    // stuck-open session, whose most recent entry (or its start time, if none)
+    // is the best guess at when it actually ended.
+    lastActivityAt:
+      session.lastActivityAt ??
+      Math.max(
+        session.startedAt,
+        session.endedAt ?? 0,
+        ...session.entries.map((e) => e.timestamp),
+      ),
   }
 }
 

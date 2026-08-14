@@ -43,6 +43,7 @@ function session(overrides: Partial<Session> = {}): Session {
       { presetId: null, fillId: 0 },
       { presetId: null, fillId: 0 },
     ],
+    lastActivityAt: 0,
     ...overrides,
   }
 }

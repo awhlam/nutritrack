@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { StatBar } from './StatBar'
 import { MileageControl } from './MileageControl'
 import { SessionNameField } from './SessionNameField'
+import { SessionTimeField } from './SessionTimeField'
 import { DrinkSlots } from './DrinkSlots'
 import { PresetGrid } from './PresetGrid'
 import { EntryList } from './EntryList'
@@ -25,6 +26,7 @@ interface TrackerProps {
   onDeleteEntry: (entryId: string) => void
   onMileageChange: (mileage: number) => void
   onNameChange: (name: string) => void
+  onStartedAtChange: (startedAt: number) => void
   onManagePresets: () => void
   onHistory: () => void
   onEndSession: () => void
@@ -45,6 +47,7 @@ export function Tracker({
   onDeleteEntry,
   onMileageChange,
   onNameChange,
+  onStartedAtChange,
   onManagePresets,
   onHistory,
   onEndSession,
@@ -84,6 +87,7 @@ export function Tracker({
       </div>
 
       <SessionNameField name={session.name} onChange={onNameChange} className="text-lg" />
+      <SessionTimeField label="Started" timestamp={session.startedAt} onChange={onStartedAtChange} />
 
       <StatBar session={session} now={now} />
       <MileageControl mileage={session.currentMileage} onChange={onMileageChange} />

@@ -23,6 +23,7 @@ function session(entries: Entry[], drinkSlots: Session['drinkSlots']): Session {
     currentMileage: 0,
     entries,
     drinkSlots,
+    lastActivityAt: 0,
   }
 }
 

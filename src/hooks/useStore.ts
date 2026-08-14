@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DrinkSlot, Entry, Preset, Session } from '../lib/types'
+import { isSessionStale } from '../lib/session'
 import {
   loadActiveSessionId,
   loadPresets,
@@ -10,12 +11,15 @@ import {
   uid,
 } from '../lib/storage'
 
+const STALE_CHECK_INTERVAL_MS = 60_000
+
 export function useStore() {
   const [presets, setPresets] = useState<Preset[]>(() => loadPresets())
   const [sessions, setSessions] = useState<Session[]>(() => loadSessions())
   const [activeSessionId, setActiveSessionId] = useState<string | null>(() =>
     loadActiveSessionId(),
   )
+  const [autoEndedSessionId, setAutoEndedSessionId] = useState<string | null>(null)
 
   useEffect(() => savePresets(presets), [presets])
   useEffect(() => saveSessions(sessions), [sessions])
@@ -24,10 +28,11 @@ export function useStore() {
   const activeSession = sessions.find((s) => s.id === activeSessionId) ?? null
 
   const startSession = useCallback(() => {
+    const now = Date.now()
     const session: Session = {
       id: uid(),
       name: '',
-      startedAt: Date.now(),
+      startedAt: now,
       endedAt: null,
       currentMileage: 0,
       entries: [],
@@ -35,16 +40,15 @@ export function useStore() {
         { presetId: null, fillId: 0 },
         { presetId: null, fillId: 0 },
       ],
+      lastActivityAt: now,
     }
     setSessions((prev) => [...prev, session])
     setActiveSessionId(session.id)
     return session.id
   }, [])
 
-  const endSession = useCallback((sessionId: string) => {
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, endedAt: Date.now() } : s)),
-    )
+  const endSession = useCallback((sessionId: string, endedAt: number = Date.now()) => {
+    setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, endedAt } : s)))
     setActiveSessionId((current) => (current === sessionId ? null : current))
   }, [])
 
@@ -58,7 +62,9 @@ export function useStore() {
       const newEntry: Entry = { ...entry, id: uid() }
       setSessions((prev) =>
         prev.map((s) =>
-          s.id === sessionId ? { ...s, entries: [...s.entries, newEntry] } : s,
+          s.id === sessionId
+            ? { ...s, entries: [...s.entries, newEntry], lastActivityAt: Date.now() }
+            : s,
         ),
       )
       return newEntry.id
@@ -76,6 +82,7 @@ export function useStore() {
                 entries: s.entries.map((e) =>
                   e.id === entryId ? { ...e, ...patch } : e,
                 ),
+                lastActivityAt: Date.now(),
               }
             : s,
         ),
@@ -88,7 +95,7 @@ export function useStore() {
     setSessions((prev) =>
       prev.map((s) =>
         s.id === sessionId
-          ? { ...s, entries: s.entries.filter((e) => e.id !== entryId) }
+          ? { ...s, entries: s.entries.filter((e) => e.id !== entryId), lastActivityAt: Date.now() }
           : s,
       ),
     )
@@ -96,12 +103,30 @@ export function useStore() {
 
   const setSessionMileage = useCallback((sessionId: string, mileage: number) => {
     setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, currentMileage: mileage } : s)),
+      prev.map((s) =>
+        s.id === sessionId ? { ...s, currentMileage: mileage, lastActivityAt: Date.now() } : s,
+      ),
     )
   }, [])
 
   const setSessionName = useCallback((sessionId: string, name: string) => {
-    setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, name } : s)))
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, name, lastActivityAt: Date.now() } : s)),
+    )
+  }, [])
+
+  const setSessionStartedAt = useCallback((sessionId: string, startedAt: number) => {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === sessionId ? { ...s, startedAt, lastActivityAt: Date.now() } : s,
+      ),
+    )
+  }, [])
+
+  const setSessionEndedAt = useCallback((sessionId: string, endedAt: number) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, endedAt, lastActivityAt: Date.now() } : s)),
+    )
   }, [])
 
   /** Assigning a drink (including re-picking the same one for a refill) always bumps fillId, so progress starts over for the new bottle. */
@@ -111,7 +136,7 @@ export function useStore() {
         if (s.id !== sessionId) return s
         const drinkSlots = [...s.drinkSlots] as [DrinkSlot, DrinkSlot]
         drinkSlots[slotIndex] = { presetId, fillId: drinkSlots[slotIndex].fillId + 1 }
-        return { ...s, drinkSlots }
+        return { ...s, drinkSlots, lastActivityAt: Date.now() }
       }),
     )
   }, [])
@@ -122,7 +147,7 @@ export function useStore() {
         if (s.id !== sessionId) return s
         const drinkSlots = [...s.drinkSlots] as [DrinkSlot, DrinkSlot]
         drinkSlots[slotIndex] = { presetId: null, fillId: drinkSlots[slotIndex].fillId }
-        return { ...s, drinkSlots }
+        return { ...s, drinkSlots, lastActivityAt: Date.now() }
       }),
     )
   }, [])
@@ -144,6 +169,36 @@ export function useStore() {
     setPresets((prev) => prev.filter((p) => p.id !== id))
   }, [])
 
+  // Keep refs in sync so the interval below always sees current state without
+  // having to tear down and recreate itself on every session change.
+  const sessionsRef = useRef(sessions)
+  const activeSessionIdRef = useRef(activeSessionId)
+  useEffect(() => {
+    sessionsRef.current = sessions
+  }, [sessions])
+  useEffect(() => {
+    activeSessionIdRef.current = activeSessionId
+  }, [activeSessionId])
+
+  useEffect(() => {
+    const checkForStaleSession = () => {
+      const id = activeSessionIdRef.current
+      if (!id) return
+      const session = sessionsRef.current.find((s) => s.id === id)
+      if (!session || !isSessionStale(session, Date.now())) return
+      // Use the last known activity as the end time — the closest honest guess
+      // at when the ride actually ended, rather than whenever this check ran.
+      endSession(session.id, session.lastActivityAt)
+      setAutoEndedSessionId(session.id)
+    }
+
+    checkForStaleSession()
+    const interval = window.setInterval(checkForStaleSession, STALE_CHECK_INTERVAL_MS)
+    return () => window.clearInterval(interval)
+  }, [endSession])
+
+  const clearAutoEndedSession = useCallback(() => setAutoEndedSessionId(null), [])
+
   return {
     presets,
     sessions,
@@ -156,11 +211,15 @@ export function useStore() {
     deleteEntry,
     setSessionMileage,
     setSessionName,
+    setSessionStartedAt,
+    setSessionEndedAt,
     assignDrinkSlot,
     clearDrinkSlot,
     addPreset,
     addPresetWithId,
     updatePreset,
     deletePreset,
+    autoEndedSessionId,
+    clearAutoEndedSession,
   }
 }
