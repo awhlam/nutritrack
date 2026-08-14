@@ -6,7 +6,7 @@ interface DrinkPickerModalProps {
   title: string
   drinkPresets: Preset[]
   onSelect: (presetId: string) => void
-  onCreate: (data: { label: string; carbs: number }) => void
+  onCreate: (data: { label: string; carbs: number; caffeine: number }) => void
   onClose: () => void
 }
 
@@ -20,9 +20,16 @@ export function DrinkPickerModal({
   const [creating, setCreating] = useState(drinkPresets.length === 0)
   const [label, setLabel] = useState('')
   const [carbs, setCarbs] = useState('')
+  const [caffeine, setCaffeine] = useState('')
 
   const carbsNum = parseFloat(carbs)
-  const valid = label.trim().length > 0 && !Number.isNaN(carbsNum) && carbsNum >= 0
+  const caffeineNum = caffeine.trim() === '' ? 0 : parseFloat(caffeine)
+  const valid =
+    label.trim().length > 0 &&
+    !Number.isNaN(carbsNum) &&
+    carbsNum >= 0 &&
+    !Number.isNaN(caffeineNum) &&
+    caffeineNum >= 0
 
   return (
     <Modal title={title} onClose={onClose}>
@@ -43,7 +50,9 @@ export function DrinkPickerModal({
                   />
                   <span className="font-medium text-white">{preset.label}</span>
                 </span>
-                <span className="text-sm text-slate-400">{preset.carbs}g total</span>
+                <span className="text-sm text-slate-400">
+                  {preset.carbs}g total{preset.caffeine > 0 ? ` · ${preset.caffeine}mg caffeine` : ''}
+                </span>
               </button>
             ))}
           </div>
@@ -67,10 +76,18 @@ export function DrinkPickerModal({
               placeholder="Total carbs in the full bottle (g)"
               className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
             />
+            <input
+              type="number"
+              inputMode="decimal"
+              value={caffeine}
+              onChange={(e) => setCaffeine(e.target.value)}
+              placeholder="Total caffeine in the full bottle (mg, optional)"
+              className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
+            />
             <button
               type="button"
               disabled={!valid}
-              onClick={() => onCreate({ label: label.trim(), carbs: carbsNum })}
+              onClick={() => onCreate({ label: label.trim(), carbs: carbsNum, caffeine: caffeineNum })}
               className="w-full rounded-lg bg-emerald-500 py-2 text-sm font-bold text-slate-950 disabled:opacity-40"
             >
               Create & Use

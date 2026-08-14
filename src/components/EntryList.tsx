@@ -1,4 +1,4 @@
-import { formatCarbs, formatClockTimeShort, formatMileage } from '../lib/format'
+import { formatCaffeine, formatCarbs, formatClockTimeShort, formatMileage } from '../lib/format'
 import type { Entry } from '../lib/types'
 
 interface EntryListProps {
@@ -24,7 +24,7 @@ export function EntryList({ entries, onSelect }: EntryListProps) {
           <button
             type="button"
             onClick={() => onSelect(entry)}
-            className="flex w-full items-center justify-between gap-3 py-3 text-left active:bg-slate-800/50"
+            className="flex w-full items-center justify-between gap-3 py-2 text-left active:bg-slate-800/50"
           >
             <div className="flex flex-col">
               <span className="font-medium text-white">{entry.label}</span>
@@ -33,15 +33,20 @@ export function EntryList({ entries, onSelect }: EntryListProps) {
                 {entry.drink && ` · +${entry.drink.percent}%`}
               </span>
             </div>
-            <span
-              className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                entry.carbs === null
-                  ? 'bg-amber-500/15 text-amber-400'
-                  : 'bg-slate-800 text-emerald-400'
-              }`}
-            >
-              {entry.carbs === null ? 'Add carbs' : formatCarbs(entry.carbs)}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span
+                className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                  entry.carbs === null
+                    ? 'bg-amber-500/15 text-amber-400'
+                    : 'bg-slate-800 text-emerald-400'
+                }`}
+              >
+                {entry.carbs === null ? 'Add carbs' : formatCarbs(entry.carbs)}
+              </span>
+              {entry.caffeine > 0 && (
+                <span className="text-[10px] text-slate-500">{formatCaffeine(entry.caffeine)} caffeine</span>
+              )}
+            </div>
           </button>
         </li>
       ))}

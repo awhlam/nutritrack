@@ -7,6 +7,7 @@ const waterPreset: Preset = {
   id: 'preset-water',
   label: 'Water',
   carbs: 0,
+  caffeine: 0,
   color: '#38bdf8',
   kind: 'drink',
 }
@@ -15,6 +16,7 @@ const mixPreset: Preset = {
   id: 'preset-mix',
   label: 'Carb Mix',
   carbs: 60,
+  caffeine: 80,
   color: '#3b82f6',
   kind: 'drink',
 }
@@ -26,6 +28,7 @@ function drinkEntry(percent: number, slot: 0 | 1 = 0, fillId = 1): Entry {
     mileage: 0,
     label: 'Carb Mix',
     carbs: (percent / 100) * mixPreset.carbs,
+    caffeine: (percent / 100) * mixPreset.caffeine,
     presetId: mixPreset.id,
     drink: { slot, fillId, percent },
   }
@@ -91,8 +94,25 @@ describe('DrinkSlots — unassigned slot', () => {
       target: { value: '45' },
     })
     fireEvent.click(screen.getByText('Create & Use'))
-    expect(onCreateAndAssign).toHaveBeenCalledWith(1, { label: 'Electrolyte Mix', carbs: 45 })
+    expect(onCreateAndAssign).toHaveBeenCalledWith(1, { label: 'Electrolyte Mix', carbs: 45, caffeine: 0 })
     expect(onAssign).not.toHaveBeenCalled()
+  })
+
+  it('creating a new drink with caffeine passes it through', () => {
+    const { onCreateAndAssign } = renderSlots()
+    fireEvent.click(screen.getByText('Add Drink to Bottle 1'))
+    fireEvent.click(screen.getByText('+ New drink'))
+    fireEvent.change(screen.getByPlaceholderText('e.g. Carb Drink Mix'), {
+      target: { value: 'Cola' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Total carbs in the full bottle (g)'), {
+      target: { value: '40' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Total caffeine in the full bottle (mg, optional)'), {
+      target: { value: '35' },
+    })
+    fireEvent.click(screen.getByText('Create & Use'))
+    expect(onCreateAndAssign).toHaveBeenCalledWith(0, { label: 'Cola', carbs: 40, caffeine: 35 })
   })
 })
 
@@ -136,22 +156,27 @@ describe('DrinkSlots — assigned slot', () => {
     expect(screen.queryByTestId('drink-mark-0-25')).toBeNull()
   })
 
-  it('lets you enter an exact percent greater than the current one', () => {
-    const { onLog } = renderSlots({
+  it('does not offer a custom-percent entry — only the quarter marks', () => {
+    renderSlots({
       drinkSlots: [{ presetId: 'preset-mix', fillId: 1 }, { presetId: null, fillId: 0 }],
       entries: [drinkEntry(20)],
     })
-    fireEvent.click(screen.getByText('Enter exact %'))
-    const input = screen.getByPlaceholderText('>20')
-    const logButton = screen.getByText('Log').closest('button') as HTMLButtonElement
+    expect(screen.queryByText('Enter exact %')).toBeNull()
+  })
 
-    fireEvent.change(input, { target: { value: '15' } })
-    expect(logButton.disabled).toBe(true)
+  it('shows caffeine consumed so far alongside carbs, only when the drink has caffeine', () => {
+    renderSlots({
+      drinkSlots: [{ presetId: 'preset-mix', fillId: 1 }, { presetId: null, fillId: 0 }],
+      entries: [drinkEntry(50)],
+    })
+    expect(screen.getByText(/40mg caffeine/)).toBeTruthy()
+  })
 
-    fireEvent.change(input, { target: { value: '60' } })
-    expect(logButton.disabled).toBe(false)
-    fireEvent.click(logButton)
-    expect(onLog).toHaveBeenCalledWith(0, 60)
+  it('omits the caffeine suffix for a caffeine-free drink', () => {
+    renderSlots({
+      drinkSlots: [{ presetId: 'preset-water', fillId: 1 }, { presetId: null, fillId: 0 }],
+    })
+    expect(screen.queryByText(/caffeine/)).toBeNull()
   })
 
   it('clearing a slot calls onClear for that index', () => {

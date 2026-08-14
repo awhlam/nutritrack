@@ -15,10 +15,11 @@ interface TrackerProps {
   presets: Preset[]
   now: number
   onLogPreset: (preset: Preset) => void
-  onCreatePreset: (data: { label: string; carbs: number; color: string }) => void
+  onCreatePreset: (data: { label: string; carbs: number; caffeine: number; color: string }) => void
   onLogCustom: (data: {
     label: string
     carbs: number | null
+    caffeine: number
     timestamp: number
     mileage: number
   }) => void
@@ -31,7 +32,10 @@ interface TrackerProps {
   onHistory: () => void
   onEndSession: () => void
   onAssignDrink: (slotIndex: 0 | 1, presetId: string) => void
-  onCreateAndAssignDrink: (slotIndex: 0 | 1, data: { label: string; carbs: number }) => void
+  onCreateAndAssignDrink: (
+    slotIndex: 0 | 1,
+    data: { label: string; carbs: number; caffeine: number },
+  ) => void
   onClearDrink: (slotIndex: 0 | 1) => void
   onLogDrink: (slotIndex: 0 | 1, targetPercent: number) => void
 }
@@ -63,7 +67,7 @@ export function Tracker({
   const drinkPresets = presets.filter((p) => p.kind === 'drink')
 
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
+    <div className="flex flex-1 flex-col gap-3 px-4 pb-6 pt-4">
       <div className="flex items-center justify-between">
         <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-300">
           In Progress
@@ -106,14 +110,14 @@ export function Tracker({
       <button
         type="button"
         onClick={() => setShowCustom(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-600 bg-slate-800/80 py-4 text-base font-semibold text-slate-200 active:bg-slate-700"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-600 bg-slate-800/80 py-2.5 text-sm font-semibold text-slate-200 active:bg-slate-700"
       >
-        <span className="text-xl leading-none">✏️</span>
+        <span className="text-lg leading-none">✏️</span>
         Custom Entry
       </button>
 
       <div className="flex-1">
-        <h2 className="mb-1 mt-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-1 mt-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
           Log
         </h2>
         <EntryList entries={session.entries} onSelect={setEditingEntry} />

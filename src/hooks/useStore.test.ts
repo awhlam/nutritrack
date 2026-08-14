@@ -105,6 +105,7 @@ describe('useStore entries', () => {
         mileage: 6,
         label: 'Energy Gel',
         carbs: 25,
+        caffeine: 25,
         presetId: 'preset-gel',
       })
     })
@@ -115,6 +116,7 @@ describe('useStore entries', () => {
       mileage: 6,
       label: 'Energy Gel',
       carbs: 25,
+      caffeine: 25,
       presetId: 'preset-gel',
     })
     expect(entries[0].id).toBeTruthy()
@@ -129,6 +131,7 @@ describe('useStore entries', () => {
         mileage: 2,
         label: 'Banana',
         carbs: 27,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -151,6 +154,7 @@ describe('useStore entries', () => {
         mileage: 1,
         label: 'Gel',
         carbs: 25,
+        caffeine: 0,
         presetId: null,
       })
       hook.result.current.addEntry(id, {
@@ -158,6 +162,7 @@ describe('useStore entries', () => {
         mileage: 2,
         label: 'Chews',
         carbs: 24,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -185,6 +190,7 @@ describe('useStore entries', () => {
         mileage: 3,
         label: 'Aid station mystery snack',
         carbs: null,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -269,6 +275,7 @@ describe('useStore drink slots', () => {
         id: 'custom-drink-1',
         label: 'Electrolyte Mix',
         carbs: 45,
+        caffeine: 0,
         color: '#38bdf8',
         kind: 'drink',
       })
@@ -352,6 +359,7 @@ describe('useStore auto-end on inactivity', () => {
         mileage: 1,
         label: 'Gel',
         carbs: 25,
+        caffeine: 0,
         presetId: null,
       })
     })
@@ -409,10 +417,10 @@ describe('useStore presets', () => {
   it('adds a preset with a generated id', () => {
     const { result } = renderHook(() => useStore())
     act(() => {
-      result.current.addPreset({ label: 'Waffle', carbs: 21, color: '#22c55e', kind: 'item' })
+      result.current.addPreset({ label: 'Waffle', carbs: 21, caffeine: 0, color: '#22c55e', kind: 'item' })
     })
     const added = result.current.presets.at(-1)!
-    expect(added).toMatchObject({ label: 'Waffle', carbs: 21, color: '#22c55e', kind: 'item' })
+    expect(added).toMatchObject({ label: 'Waffle', carbs: 21, caffeine: 0, color: '#22c55e', kind: 'item' })
     expect(added.id).toBeTruthy()
   })
 
@@ -438,7 +446,7 @@ describe('useStore presets', () => {
   it('persists preset edits across remounts', () => {
     const first = renderHook(() => useStore())
     act(() => {
-      first.result.current.addPreset({ label: 'Rice Cake', carbs: 18, color: '#14b8a6', kind: 'item' })
+      first.result.current.addPreset({ label: 'Rice Cake', carbs: 18, caffeine: 0, color: '#14b8a6', kind: 'item' })
     })
     first.unmount()
 

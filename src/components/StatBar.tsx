@@ -3,6 +3,7 @@ import {
   formatDuration,
   formatRate,
   pendingCarbsCount,
+  totalCaffeine,
   totalCarbs,
 } from '../lib/format'
 import type { Session } from '../lib/types'
@@ -16,15 +17,17 @@ export function StatBar({ session, now }: StatBarProps) {
   const end = session.endedAt ?? now
   const duration = formatDuration(end - session.startedAt)
   const carbs = totalCarbs(session.entries)
+  const caffeine = totalCaffeine(session.entries)
   const perHour = carbsPerHour(session, end)
   const pending = pendingCarbsCount(session.entries)
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         <Stat label="Elapsed" value={duration} />
-        <Stat label="Total Carbs" value={`${Math.round(carbs)}g`} accent />
-        <Stat label="Carbs / hr" value={formatRate(perHour)} />
+        <Stat label="Carbs" value={`${Math.round(carbs)}g`} accent />
+        <Stat label="Caffeine" value={`${Math.round(caffeine)}mg`} />
+        <Stat label="Carbs/hr" value={formatRate(perHour)} />
       </div>
       {pending > 0 && (
         <p className="mt-1.5 text-center text-xs text-amber-400">
@@ -45,10 +48,10 @@ function Stat({
   accent?: boolean
 }) {
   return (
-    <div className="rounded-2xl bg-slate-800/60 py-3 text-center">
-      <div className="text-[11px] uppercase tracking-wide text-slate-400">{label}</div>
+    <div className="rounded-2xl bg-slate-800/60 py-2 text-center">
+      <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
       <div
-        className={`text-2xl font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}
+        className={`text-lg font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}
       >
         {value}
       </div>

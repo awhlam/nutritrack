@@ -7,6 +7,7 @@ interface CustomEntryModalProps {
   onSave: (data: {
     label: string
     carbs: number | null
+    caffeine: number
     timestamp: number
     mileage: number
   }) => void
@@ -21,19 +22,25 @@ export function CustomEntryModal({
   const [label, setLabel] = useState('')
   const [carbs, setCarbs] = useState('')
   const [carbsPending, setCarbsPending] = useState(false)
+  const [caffeine, setCaffeine] = useState('')
   const [timestamp, setTimestamp] = useState(() => Date.now())
   const [mileage, setMileage] = useState(String(defaultMileage.toFixed(1)))
 
   const carbsNum = parseFloat(carbs)
+  const caffeineNum = caffeine.trim() === '' ? 0 : parseFloat(caffeine)
   const mileageNum = parseFloat(mileage)
   const valid =
-    label.trim().length > 0 && (carbsPending || (!Number.isNaN(carbsNum) && carbsNum >= 0))
+    label.trim().length > 0 &&
+    (carbsPending || (!Number.isNaN(carbsNum) && carbsNum >= 0)) &&
+    !Number.isNaN(caffeineNum) &&
+    caffeineNum >= 0
 
   const handleSave = () => {
     if (!valid) return
     onSave({
       label: label.trim(),
       carbs: carbsPending ? null : carbsNum,
+      caffeine: caffeineNum,
       timestamp,
       mileage: Number.isNaN(mileageNum) ? defaultMileage : mileageNum,
     })
@@ -75,6 +82,20 @@ export function CustomEntryModal({
             placeholder="0"
             disabled={carbsPending}
             className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500 disabled:opacity-40"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-400">
+            Caffeine (mg, optional)
+          </label>
+          <input
+            type="number"
+            inputMode="decimal"
+            value={caffeine}
+            onChange={(e) => setCaffeine(e.target.value)}
+            placeholder="0 (optional)"
+            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
           />
         </div>
 

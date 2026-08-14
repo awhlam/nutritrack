@@ -4,6 +4,7 @@ import {
   buildTextExport,
   carbsPerHour,
   elapsedMs,
+  formatCaffeine,
   formatCarbs,
   formatDuration,
   formatMileage,
@@ -11,6 +12,7 @@ import {
   formatRate,
   pendingCarbsCount,
   timeInputValue,
+  totalCaffeine,
   totalCarbs,
 } from './format'
 import type { Entry, Session } from './types'
@@ -24,6 +26,7 @@ function entry(partial: Partial<Entry> = {}): Entry {
     mileage: 0,
     label: 'Energy Gel',
     carbs: 25,
+    caffeine: 0,
     presetId: null,
     ...partial,
   }
@@ -118,6 +121,23 @@ describe('formatCarbs', () => {
   })
 })
 
+describe('totalCaffeine', () => {
+  it('sums caffeine across entries', () => {
+    expect(totalCaffeine([entry({ caffeine: 25 }), entry({ caffeine: 15 })])).toBe(40)
+  })
+
+  it('is zero for an empty log or entries with no caffeine', () => {
+    expect(totalCaffeine([])).toBe(0)
+    expect(totalCaffeine([entry({ caffeine: 0 })])).toBe(0)
+  })
+})
+
+describe('formatCaffeine', () => {
+  it('rounds and appends the unit', () => {
+    expect(formatCaffeine(24.6)).toBe('25mg')
+  })
+})
+
 describe('elapsedMs', () => {
   it('measures against now while the session is open', () => {
     expect(elapsedMs(session({ startedAt: 1000 }), 5000)).toBe(4000)
@@ -198,8 +218,27 @@ describe('buildTextExport', () => {
     expect(text).toContain('NutriTrack')
     expect(text).toContain('Duration:       2h 0m')
     expect(text).toContain('Total Carbs:    52 g')
+    expect(text).toContain('Total Caffeine: 0 mg')
     expect(text).toContain('Avg Carbs/hr:   26 g/hr')
     expect(text).toContain('Entries:        2')
+  })
+
+  it('includes the total caffeine across entries', () => {
+    const withCaffeine = session({
+      startedAt,
+      endedAt: startedAt + HOUR,
+      entries: [entry({ caffeine: 25 }), entry({ caffeine: 15 })],
+    })
+    expect(buildTextExport(withCaffeine)).toContain('Total Caffeine: 40 mg')
+  })
+
+  it('includes each entry caffeine amount in the table', () => {
+    const withCaffeine = session({
+      startedAt,
+      endedAt: startedAt + HOUR,
+      entries: [entry({ label: 'Energy Gel', caffeine: 25 })],
+    })
+    expect(buildTextExport(withCaffeine)).toMatch(/Energy Gel\s+25g\s+25mg/)
   })
 
   it('lists entries in chronological order', () => {

@@ -2,7 +2,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from './App'
 
 beforeEach(() => {
@@ -10,15 +10,26 @@ beforeEach(() => {
 })
 
 describe('App startup', () => {
-  it('starts a session automatically, with no start screen or tap required', async () => {
+  it('shows a start screen and does not begin tracking on its own', async () => {
     render(<App />)
-    // The tracker (elapsed/carbs stats, End button) should appear on its own.
-    await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
-    expect(screen.queryByRole('button', { name: /^start$/i })).toBeNull()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy())
+    expect(screen.queryByText('End')).toBeNull()
+
+    const sessions = JSON.parse(localStorage.getItem('nutritrack:sessions') ?? '[]')
+    expect(sessions).toHaveLength(0)
   })
 
-  it('resumes the existing active session instead of starting a second one', async () => {
+  it('begins tracking only once Start is tapped', async () => {
+    render(<App />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+    await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
+  })
+
+  it('resumes an existing active session instead of showing the start screen again', async () => {
     const { unmount } = render(<App />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
     await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
     unmount()
 

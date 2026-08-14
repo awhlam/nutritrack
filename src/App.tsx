@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from './hooks/useStore'
 import { useNow } from './hooks/useNow'
+import { StartScreen } from './components/StartScreen'
 import { Tracker } from './components/Tracker'
 import { PresetManager } from './components/PresetManager'
 import { History } from './components/History'
 import { SessionDetail } from './components/SessionDetail'
 import { Toast } from './components/Toast'
-import { drinkDeltaCarbs, slotPercent } from './lib/drinks'
+import { drinkDeltaCaffeine, drinkDeltaCarbs, slotPercent } from './lib/drinks'
 import { uid } from './lib/storage'
 import type { Preset } from './lib/types'
 
@@ -16,7 +17,6 @@ const DRINK_SLOT_COLORS: [string, string] = ['#38bdf8', '#3b82f6']
 
 function App() {
   const store = useStore()
-  const { activeSession, startSession } = store
   const now = useNow()
   const [screen, setScreen] = useState<Screen>('home')
   const [detailSessionId, setDetailSessionId] = useState<string | null>(null)
@@ -26,14 +26,6 @@ function App() {
     setToast(message)
     window.setTimeout(() => setToast(null), 1800)
   }, [])
-
-  // There's nothing worth showing before a session exists, so start one
-  // immediately instead of making the athlete tap through a start screen.
-  useEffect(() => {
-    if (!activeSession) {
-      startSession()
-    }
-  }, [activeSession, startSession])
 
   const { autoEndedSessionId, clearAutoEndedSession } = store
   useEffect(() => {
@@ -51,18 +43,20 @@ function App() {
       mileage: store.activeSession.currentMileage,
       label: preset.label,
       carbs: preset.carbs,
+      caffeine: preset.caffeine,
       presetId: preset.id,
     })
     flash(`Logged ${preset.label} · ${preset.carbs}g carbs`)
   }
 
-  const handleCreatePreset = (data: { label: string; carbs: number; color: string }) => {
+  const handleCreatePreset = (data: { label: string; carbs: number; caffeine: number; color: string }) => {
     store.addPreset({ ...data, kind: 'item' })
   }
 
   const handleLogCustom = (data: {
     label: string
     carbs: number | null
+    caffeine: number
     timestamp: number
     mileage: number
   }) => {
@@ -72,6 +66,7 @@ function App() {
       mileage: data.mileage,
       label: data.label,
       carbs: data.carbs,
+      caffeine: data.caffeine,
       presetId: null,
     })
     if (data.mileage !== store.activeSession.currentMileage) {
@@ -91,13 +86,14 @@ function App() {
 
   const handleCreateAndAssignDrink = (
     slotIndex: 0 | 1,
-    data: { label: string; carbs: number },
+    data: { label: string; carbs: number; caffeine: number },
   ) => {
     if (!store.activeSession) return
     const preset: Preset = {
       id: uid(),
       label: data.label,
       carbs: data.carbs,
+      caffeine: data.caffeine,
       color: DRINK_SLOT_COLORS[slotIndex],
       kind: 'drink',
     }
@@ -122,11 +118,13 @@ function App() {
     if (delta <= 0) return
 
     const carbs = drinkDeltaCarbs(preset.carbs, delta)
+    const caffeine = drinkDeltaCaffeine(preset.caffeine, delta)
     store.addEntry(session.id, {
       timestamp: Date.now(),
       mileage: session.currentMileage,
       label: preset.label,
       carbs,
+      caffeine,
       presetId: preset.id,
       drink: { slot: slotIndex, fillId: slot.fillId, percent: delta },
     })
@@ -146,6 +144,14 @@ function App() {
 
   return (
     <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
+      {screen === 'home' && !store.activeSession && (
+        <StartScreen
+          onStart={store.startSession}
+          onManagePresets={() => setScreen('presets')}
+          onHistory={() => setScreen('history')}
+        />
+      )}
+
       {screen === 'home' && store.activeSession && (
         <Tracker
           session={store.activeSession}
@@ -213,7 +219,7 @@ function App() {
           }}
           onClose={() => {
             setDetailSessionId(null)
-            setScreen(store.activeSession ? 'home' : 'history')
+            setScreen('home')
           }}
         />
       )}

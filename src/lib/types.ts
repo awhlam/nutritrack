@@ -5,6 +5,8 @@ export interface Preset {
   label: string
   /** Carbs per serving for an 'item' preset; total carbs in the full container for a 'drink' preset. */
   carbs: number
+  /** Caffeine (mg), same per-serving/per-container convention as carbs. */
+  caffeine: number
   color: string
   kind: PresetKind
 }
@@ -24,6 +26,8 @@ export interface Entry {
   label: string
   /** null = carb count not entered yet ("figure it out later"). */
   carbs: number | null
+  /** Caffeine (mg). Unlike carbs, always a known number — defaults to 0 rather than pending. */
+  caffeine: number
   presetId: string | null
   drink?: DrinkEntryInfo
 }
