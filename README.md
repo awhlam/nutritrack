@@ -145,7 +145,10 @@ Pushes to `main` build and publish to GitHub Pages via
 one-time repo setup and for other hosts.
 
 The app is installable — "Add to Home Screen" gives it its own icon and a
-standalone window, and it keeps working with no signal once loaded.
+standalone window, and it keeps working with no signal once loaded. When a new
+version is deployed, a banner prompts you to refresh instead of updating
+silently — see [docs/DEPLOY.md](docs/DEPLOY.md#using-it-on-your-phone) if a
+refresh doesn't seem to be picking it up.
 
 ## Tech stack
 

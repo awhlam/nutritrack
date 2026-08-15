@@ -7,6 +7,7 @@ import { PresetManager } from './components/PresetManager'
 import { History } from './components/History'
 import { SessionDetail } from './components/SessionDetail'
 import { Toast } from './components/Toast'
+import { UpdatePrompt } from './components/UpdatePrompt'
 import { drinkDeltaCaffeine, drinkDeltaCarbs, drinkDeltaSodium, slotPercent } from './lib/drinks'
 import { uid } from './lib/storage'
 import type { Preset } from './lib/types'
@@ -156,6 +157,7 @@ function App() {
 
   return (
     <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
+      <UpdatePrompt />
       {screen === 'home' && !store.activeSession && (
         <StartScreen
           onStart={store.startSession}
