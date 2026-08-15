@@ -8,6 +8,7 @@ import { History } from './components/History'
 import { SessionDetail } from './components/SessionDetail'
 import { Toast } from './components/Toast'
 import { UpdatePrompt } from './components/UpdatePrompt'
+import { AppUpdateProvider } from './hooks/useAppUpdate'
 import { drinkDeltaCaffeine, drinkDeltaCarbs, drinkDeltaSodium, slotPercent } from './lib/drinks'
 import { uid } from './lib/storage'
 import type { Preset } from './lib/types'
@@ -168,91 +169,93 @@ function App() {
   }
 
   return (
-    <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
-      <UpdatePrompt />
-      {screen === 'home' && !store.activeSession && (
-        <StartScreen
-          onStart={store.startSession}
-          onManagePresets={() => setScreen('presets')}
-          onHistory={() => setScreen('history')}
-        />
-      )}
+    <AppUpdateProvider>
+      <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
+        <UpdatePrompt />
+        {screen === 'home' && !store.activeSession && (
+          <StartScreen
+            onStart={store.startSession}
+            onManagePresets={() => setScreen('presets')}
+            onHistory={() => setScreen('history')}
+          />
+        )}
 
-      {screen === 'home' && store.activeSession && (
-        <Tracker
-          session={store.activeSession}
-          presets={store.presets}
-          now={now}
-          onLogPreset={handleLogPreset}
-          onCreatePreset={handleCreatePreset}
-          onLogCustom={handleLogCustom}
-          onUpdateEntry={(entryId, patch) =>
-            store.updateEntry(store.activeSession!.id, entryId, patch)
-          }
-          onDeleteEntry={(entryId) => store.deleteEntry(store.activeSession!.id, entryId)}
-          onMileageChange={(mileage) =>
-            store.setSessionMileage(store.activeSession!.id, mileage)
-          }
-          onNameChange={(name) => store.setSessionName(store.activeSession!.id, name)}
-          onStartedAtChange={(startedAt) =>
-            store.setSessionStartedAt(store.activeSession!.id, startedAt)
-          }
-          onManagePresets={() => setScreen('presets')}
-          onHistory={() => setScreen('history')}
-          onEndSession={handleEndSession}
-          onResetSession={handleResetSession}
-          onAssignDrink={handleAssignDrink}
-          onCreateAndAssignDrink={handleCreateAndAssignDrink}
-          onClearDrink={handleClearDrink}
-          onLogDrink={handleLogDrink}
-        />
-      )}
+        {screen === 'home' && store.activeSession && (
+          <Tracker
+            session={store.activeSession}
+            presets={store.presets}
+            now={now}
+            onLogPreset={handleLogPreset}
+            onCreatePreset={handleCreatePreset}
+            onLogCustom={handleLogCustom}
+            onUpdateEntry={(entryId, patch) =>
+              store.updateEntry(store.activeSession!.id, entryId, patch)
+            }
+            onDeleteEntry={(entryId) => store.deleteEntry(store.activeSession!.id, entryId)}
+            onMileageChange={(mileage) =>
+              store.setSessionMileage(store.activeSession!.id, mileage)
+            }
+            onNameChange={(name) => store.setSessionName(store.activeSession!.id, name)}
+            onStartedAtChange={(startedAt) =>
+              store.setSessionStartedAt(store.activeSession!.id, startedAt)
+            }
+            onManagePresets={() => setScreen('presets')}
+            onHistory={() => setScreen('history')}
+            onEndSession={handleEndSession}
+            onResetSession={handleResetSession}
+            onAssignDrink={handleAssignDrink}
+            onCreateAndAssignDrink={handleCreateAndAssignDrink}
+            onClearDrink={handleClearDrink}
+            onLogDrink={handleLogDrink}
+          />
+        )}
 
-      {screen === 'presets' && (
-        <PresetManager
-          presets={store.presets}
-          onAdd={store.addPreset}
-          onUpdate={store.updatePreset}
-          onDelete={store.deletePreset}
-          onClose={() => setScreen('home')}
-        />
-      )}
+        {screen === 'presets' && (
+          <PresetManager
+            presets={store.presets}
+            onAdd={store.addPreset}
+            onUpdate={store.updatePreset}
+            onDelete={store.deletePreset}
+            onClose={() => setScreen('home')}
+          />
+        )}
 
-      {screen === 'history' && (
-        <History
-          sessions={store.sessions}
-          onSelect={(session) => {
-            setDetailSessionId(session.id)
-            setScreen('session-detail')
-          }}
-          onClose={() => setScreen('home')}
-        />
-      )}
+        {screen === 'history' && (
+          <History
+            sessions={store.sessions}
+            onSelect={(session) => {
+              setDetailSessionId(session.id)
+              setScreen('session-detail')
+            }}
+            onClose={() => setScreen('home')}
+          />
+        )}
 
-      {screen === 'session-detail' && detailSession && (
-        <SessionDetail
-          session={detailSession}
-          now={now}
-          onUpdateEntry={(entryId, patch) => store.updateEntry(detailSession.id, entryId, patch)}
-          onDeleteEntry={(entryId) => store.deleteEntry(detailSession.id, entryId)}
-          onNameChange={(name) => store.setSessionName(detailSession.id, name)}
-          onStartedAtChange={(startedAt) => store.setSessionStartedAt(detailSession.id, startedAt)}
-          onEndedAtChange={(endedAt) => store.setSessionEndedAt(detailSession.id, endedAt)}
-          onDeleteSession={() => {
-            if (!window.confirm('Delete this session and all its entries?')) return
-            store.deleteSession(detailSession.id)
-            setDetailSessionId(null)
-            setScreen('history')
-          }}
-          onClose={() => {
-            setDetailSessionId(null)
-            setScreen('home')
-          }}
-        />
-      )}
+        {screen === 'session-detail' && detailSession && (
+          <SessionDetail
+            session={detailSession}
+            now={now}
+            onUpdateEntry={(entryId, patch) => store.updateEntry(detailSession.id, entryId, patch)}
+            onDeleteEntry={(entryId) => store.deleteEntry(detailSession.id, entryId)}
+            onNameChange={(name) => store.setSessionName(detailSession.id, name)}
+            onStartedAtChange={(startedAt) => store.setSessionStartedAt(detailSession.id, startedAt)}
+            onEndedAtChange={(endedAt) => store.setSessionEndedAt(detailSession.id, endedAt)}
+            onDeleteSession={() => {
+              if (!window.confirm('Delete this session and all its entries?')) return
+              store.deleteSession(detailSession.id)
+              setDetailSessionId(null)
+              setScreen('history')
+            }}
+            onClose={() => {
+              setDetailSessionId(null)
+              setScreen('home')
+            }}
+          />
+        )}
 
-      <Toast message={toast} />
-    </div>
+        <Toast message={toast} />
+      </div>
+    </AppUpdateProvider>
   )
 }
 

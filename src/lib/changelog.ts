@@ -15,6 +15,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       'Export Text now shows the summary on-screen with a Copy to Clipboard button, instead of downloading a .txt file',
       'Added sodium/hour to match carbs/hour and caffeine/hour',
       'Carbs, caffeine, and sodium stat cards are now compact — total and per-hour rate shown together in one card per nutrient',
+      'Added a "Check for Updates" button on the start screen, and the app now checks for a new version as soon as it opens — no more clearing browser data to see changes',
     ],
   },
   {

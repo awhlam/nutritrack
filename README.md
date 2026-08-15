@@ -29,7 +29,7 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 - **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks, reachable from the grid or via a History button in the tracker header.
 - **History** — past activities are saved locally so you can review them later.
 - **Export** — at the end of a session, export the log as text you can copy straight to the clipboard (totals, per-hour rates, and the full entry-by-entry log) or as a shareable image (`.png`).
-- **Version and changelog** — the current version shows at the bottom of the start screen; tap it for a "What's New" list of what changed in each release, viewable offline like everything else.
+- **Version and changelog** — the current version shows at the bottom of the start screen; tap it for a "What's New" list of what changed in each release, viewable offline like everything else. A "Check for Updates" button sits right next to it, so you can pull the latest version on demand instead of waiting for the automatic check or clearing browser data.
 
 All data is stored locally in the browser (`localStorage`) — no account or
 backend required.

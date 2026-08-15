@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { WhatsNewModal } from './WhatsNewModal'
 import { CURRENT_VERSION } from '../lib/changelog'
+import { useAppUpdate } from '../hooks/appUpdateContext'
 
 interface StartScreenProps {
   onStart: () => void
@@ -10,6 +11,7 @@ interface StartScreenProps {
 
 export function StartScreen({ onStart, onManagePresets, onHistory }: StartScreenProps) {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
+  const { checkForUpdate, checkStatus } = useAppUpdate()
 
   return (
     <div className="flex flex-1 flex-col justify-between px-4 pb-6 pt-4">
@@ -45,13 +47,28 @@ export function StartScreen({ onStart, onManagePresets, onHistory }: StartScreen
         >
           Start
         </button>
-        <button
-          type="button"
-          onClick={() => setShowWhatsNew(true)}
-          className="text-xs font-medium text-slate-500 active:text-slate-300"
-        >
-          v{CURRENT_VERSION} · What's New
-        </button>
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+          <button
+            type="button"
+            onClick={() => setShowWhatsNew(true)}
+            className="active:text-slate-300"
+          >
+            v{CURRENT_VERSION} · What's New
+          </button>
+          <span aria-hidden="true">·</span>
+          <button
+            type="button"
+            onClick={checkForUpdate}
+            disabled={checkStatus === 'checking'}
+            className="active:text-slate-300 disabled:opacity-60"
+          >
+            {checkStatus === 'checking'
+              ? 'Checking…'
+              : checkStatus === 'up-to-date'
+                ? '✓ Up to date'
+                : 'Check for Updates'}
+          </button>
+        </div>
       </div>
 
       {showWhatsNew && <WhatsNewModal onClose={() => setShowWhatsNew(false)} />}
