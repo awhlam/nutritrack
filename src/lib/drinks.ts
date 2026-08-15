@@ -30,3 +30,7 @@ export function drinkDeltaCarbs(containerCarbs: number, deltaPercent: number): n
 export function drinkDeltaCaffeine(containerCaffeine: number, deltaPercent: number): number {
   return proportionalDelta(containerCaffeine, deltaPercent)
 }
+
+export function drinkDeltaSodium(containerSodium: number, deltaPercent: number): number {
+  return proportionalDelta(containerSodium, deltaPercent)
+}

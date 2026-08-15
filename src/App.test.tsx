@@ -26,6 +26,15 @@ describe('App startup', () => {
     await waitFor(() => expect(screen.getByText('End')).toBeTruthy())
   })
 
+  it('shows a live "session active" indicator once tracking begins', async () => {
+    render(<App />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy())
+    expect(screen.queryByRole('status', { name: 'Session active' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+    await waitFor(() => expect(screen.getByRole('status', { name: 'Session active' })).toBeTruthy())
+  })
+
   it('resumes an existing active session instead of showing the start screen again', async () => {
     const { unmount } = render(<App />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy())

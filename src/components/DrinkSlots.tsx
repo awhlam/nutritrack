@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { DrinkPickerModal } from './DrinkPickerModal'
-import { QUARTER_MARKS, drinkDeltaCaffeine, drinkDeltaCarbs, slotPercent } from '../lib/drinks'
+import { QUARTER_MARKS, drinkDeltaCaffeine, drinkDeltaCarbs, drinkDeltaSodium, slotPercent } from '../lib/drinks'
+import { formatOptionalExtras } from '../lib/format'
 import type { Preset, Session } from '../lib/types'
 
 interface DrinkSlotsProps {
   session: Session
   drinkPresets: Preset[]
   onAssign: (slotIndex: 0 | 1, presetId: string) => void
-  onCreateAndAssign: (slotIndex: 0 | 1, data: { label: string; carbs: number; caffeine: number }) => void
+  onCreateAndAssign: (
+    slotIndex: 0 | 1,
+    data: { label: string; carbs: number; caffeine: number; sodium: number },
+  ) => void
   onClear: (slotIndex: 0 | 1) => void
   onLog: (slotIndex: 0 | 1, targetPercent: number) => void
 }
@@ -98,6 +102,8 @@ function SlotCard({
   const percent = slotPercent(session, slotIndex)
   const carbsSoFar = drinkDeltaCarbs(preset.carbs, percent)
   const caffeineSoFar = drinkDeltaCaffeine(preset.caffeine, percent)
+  const sodiumSoFar = drinkDeltaSodium(preset.sodium, percent)
+  const extras = formatOptionalExtras(caffeineSoFar, sodiumSoFar)
   const finished = percent >= 100
 
   return (
@@ -140,7 +146,7 @@ function SlotCard({
         </div>
         <div className="mt-1 text-xs text-slate-400">
           {percent}% · {Math.round(carbsSoFar)}g of {preset.carbs}g
-          {preset.caffeine > 0 && ` · ${Math.round(caffeineSoFar)}mg caffeine`}
+          {extras && ` · ${extras}`}
         </div>
       </div>
 

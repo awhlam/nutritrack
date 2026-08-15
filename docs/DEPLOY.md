@@ -67,9 +67,30 @@ visit, so it starts even with no connectivity — which matters when you reopen
 the app four hours into a ride with no bars. Your log is in `localStorage` and
 was never going over the network anyway.
 
-**Updates** are picked up automatically. The service worker uses
-`registerType: 'autoUpdate'`, so a new deploy is fetched in the background and
-applied on the next launch.
+**Updates show a prompt.** The service worker checks for a new deploy every 30
+minutes while the app is open, and on every fresh launch. When it finds one, a
+banner appears — "A new version of NutriTrack is available" with a Refresh
+button — instead of updating silently in the background where it's easy to
+miss. Tap Refresh and it reloads on the new version immediately.
+
+If you're not seeing a change you expect and no banner has appeared, the
+service worker may not have rechecked yet.
+
+<details>
+<summary>Still not seeing the update?</summary>
+
+- **Home-screen installed app:** fully close it (swipe it away in the app
+  switcher — backgrounding it doesn't count) and reopen. This sometimes takes
+  two reopens: the first fetches the update, the second serves it.
+- **iOS Safari (not installed):** pull-to-refresh doesn't bypass the cached
+  service worker. Go to Settings → Safari → Advanced → Website Data, find the
+  site, and delete it, then reopen fresh.
+- **Desktop:** hard refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`), or open DevTools
+  → Application → Service Workers → Unregister, then reload normally.
+- **Last resort:** clear the site's data entirely. This also wipes any
+  unexported sessions — see "Backing up your data" below first.
+
+</details>
 
 ## Backing up your data
 

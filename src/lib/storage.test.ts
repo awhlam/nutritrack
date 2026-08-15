@@ -18,6 +18,7 @@ function preset(partial: Partial<Preset> = {}): Preset {
     label: 'Something',
     carbs: 10,
     caffeine: 0,
+    sodium: 0,
     color: '#000000',
     kind: 'item',
     ...partial,
@@ -97,6 +98,17 @@ describe('loadPresets', () => {
   it('preserves an existing caffeine value', () => {
     savePresets([preset({ caffeine: 45 })])
     expect(loadPresets()[0].caffeine).toBe(45)
+  })
+
+  it('backfills sodium as 0 for presets saved before sodium tracking existed', () => {
+    const oldPreset = { id: 'p1', label: 'Something', carbs: 10, caffeine: 0, color: '#000000', kind: 'item' }
+    localStorage.setItem('nutritrack:presets', JSON.stringify([oldPreset]))
+    expect(loadPresets()[0].sodium).toBe(0)
+  })
+
+  it('preserves an existing sodium value', () => {
+    savePresets([preset({ sodium: 300 })])
+    expect(loadPresets()[0].sodium).toBe(300)
   })
 })
 
@@ -186,6 +198,25 @@ describe('loadSessions', () => {
     }
     localStorage.setItem('nutritrack:sessions', JSON.stringify([oldSession]))
     expect(loadSessions()[0].entries[0].caffeine).toBe(0)
+  })
+
+  it('backfills entry sodium as 0 for entries saved before sodium tracking existed', () => {
+    const oldSession = {
+      id: 's1',
+      name: '',
+      startedAt: 1000,
+      endedAt: null,
+      currentMileage: 0,
+      entries: [
+        { id: 'e1', timestamp: 5000, mileage: 1, label: 'Gel', carbs: 25, caffeine: 0, presetId: null },
+      ],
+      drinkSlots: [
+        { presetId: null, fillId: 0 },
+        { presetId: null, fillId: 0 },
+      ],
+    }
+    localStorage.setItem('nutritrack:sessions', JSON.stringify([oldSession]))
+    expect(loadSessions()[0].entries[0].sodium).toBe(0)
   })
 
   it('preserves an existing lastActivityAt', () => {

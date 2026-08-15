@@ -1,3 +1,7 @@
+import { useState } from 'react'
+import { WhatsNewModal } from './WhatsNewModal'
+import { CURRENT_VERSION } from '../lib/changelog'
+
 interface StartScreenProps {
   onStart: () => void
   onManagePresets: () => void
@@ -5,6 +9,8 @@ interface StartScreenProps {
 }
 
 export function StartScreen({ onStart, onManagePresets, onHistory }: StartScreenProps) {
+  const [showWhatsNew, setShowWhatsNew] = useState(false)
+
   return (
     <div className="flex flex-1 flex-col justify-between px-4 pb-6 pt-4">
       <div className="flex justify-end">
@@ -24,7 +30,7 @@ export function StartScreen({ onStart, onManagePresets, onHistory }: StartScreen
         </p>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col items-center gap-3">
         <button
           type="button"
           onClick={onManagePresets}
@@ -39,7 +45,16 @@ export function StartScreen({ onStart, onManagePresets, onHistory }: StartScreen
         >
           Start
         </button>
+        <button
+          type="button"
+          onClick={() => setShowWhatsNew(true)}
+          className="text-xs font-medium text-slate-500 active:text-slate-300"
+        >
+          v{CURRENT_VERSION} · What's New
+        </button>
       </div>
+
+      {showWhatsNew && <WhatsNewModal onClose={() => setShowWhatsNew(false)} />}
     </div>
   )
 }

@@ -13,8 +13,16 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
+      workbox: {
+        // clientsClaim lets a newly-activated worker take control of the
+        // page that's already open (not just future navigations) — without
+        // it, the "controlling" event our Refresh button waits on never
+        // fires, and the reload silently never happens.
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'NutriTrack',
         short_name: 'NutriTrack',

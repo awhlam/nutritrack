@@ -1,4 +1,4 @@
-import { formatCaffeine, formatCarbs, formatClockTimeShort, formatMileage } from '../lib/format'
+import { formatCarbs, formatClockTimeShort, formatMileage, formatOptionalExtras } from '../lib/format'
 import type { Entry } from '../lib/types'
 
 interface EntryListProps {
@@ -43,8 +43,10 @@ export function EntryList({ entries, onSelect }: EntryListProps) {
               >
                 {entry.carbs === null ? 'Add carbs' : formatCarbs(entry.carbs)}
               </span>
-              {entry.caffeine > 0 && (
-                <span className="text-[10px] text-slate-500">{formatCaffeine(entry.caffeine)} caffeine</span>
+              {formatOptionalExtras(entry.caffeine, entry.sodium) && (
+                <span className="text-[10px] text-slate-500">
+                  {formatOptionalExtras(entry.caffeine, entry.sodium)}
+                </span>
               )}
             </div>
           </button>

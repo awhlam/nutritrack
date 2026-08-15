@@ -7,7 +7,8 @@ import { PresetManager } from './components/PresetManager'
 import { History } from './components/History'
 import { SessionDetail } from './components/SessionDetail'
 import { Toast } from './components/Toast'
-import { drinkDeltaCaffeine, drinkDeltaCarbs, slotPercent } from './lib/drinks'
+import { UpdatePrompt } from './components/UpdatePrompt'
+import { drinkDeltaCaffeine, drinkDeltaCarbs, drinkDeltaSodium, slotPercent } from './lib/drinks'
 import { uid } from './lib/storage'
 import type { Preset } from './lib/types'
 
@@ -44,12 +45,19 @@ function App() {
       label: preset.label,
       carbs: preset.carbs,
       caffeine: preset.caffeine,
+      sodium: preset.sodium,
       presetId: preset.id,
     })
     flash(`Logged ${preset.label} · ${preset.carbs}g carbs`)
   }
 
-  const handleCreatePreset = (data: { label: string; carbs: number; caffeine: number; color: string }) => {
+  const handleCreatePreset = (data: {
+    label: string
+    carbs: number
+    caffeine: number
+    sodium: number
+    color: string
+  }) => {
     store.addPreset({ ...data, kind: 'item' })
   }
 
@@ -57,6 +65,7 @@ function App() {
     label: string
     carbs: number | null
     caffeine: number
+    sodium: number
     timestamp: number
     mileage: number
   }) => {
@@ -67,6 +76,7 @@ function App() {
       label: data.label,
       carbs: data.carbs,
       caffeine: data.caffeine,
+      sodium: data.sodium,
       presetId: null,
     })
     if (data.mileage !== store.activeSession.currentMileage) {
@@ -86,7 +96,7 @@ function App() {
 
   const handleCreateAndAssignDrink = (
     slotIndex: 0 | 1,
-    data: { label: string; carbs: number; caffeine: number },
+    data: { label: string; carbs: number; caffeine: number; sodium: number },
   ) => {
     if (!store.activeSession) return
     const preset: Preset = {
@@ -94,6 +104,7 @@ function App() {
       label: data.label,
       carbs: data.carbs,
       caffeine: data.caffeine,
+      sodium: data.sodium,
       color: DRINK_SLOT_COLORS[slotIndex],
       kind: 'drink',
     }
@@ -119,12 +130,14 @@ function App() {
 
     const carbs = drinkDeltaCarbs(preset.carbs, delta)
     const caffeine = drinkDeltaCaffeine(preset.caffeine, delta)
+    const sodium = drinkDeltaSodium(preset.sodium, delta)
     store.addEntry(session.id, {
       timestamp: Date.now(),
       mileage: session.currentMileage,
       label: preset.label,
       carbs,
       caffeine,
+      sodium,
       presetId: preset.id,
       drink: { slot: slotIndex, fillId: slot.fillId, percent: delta },
     })
@@ -144,6 +157,7 @@ function App() {
 
   return (
     <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
+      <UpdatePrompt />
       {screen === 'home' && !store.activeSession && (
         <StartScreen
           onStart={store.startSession}

@@ -8,6 +8,7 @@ const gel: Preset = {
   label: 'Energy Gel',
   carbs: 30,
   caffeine: 0,
+  sodium: 0,
   color: '#f59e0b',
   kind: 'item',
 }
@@ -62,28 +63,37 @@ describe('PresetGrid', () => {
       label: 'Waffle',
       carbs: 21,
       caffeine: 0,
+      sodium: 0,
       color: expect.any(String),
     })
   })
 
-  it('shows a caffeine badge on a tile only when the preset has caffeine', () => {
+  it('does not show the optional caffeine/sodium fields until asked', () => {
+    renderGrid([gel])
+    fireEvent.click(screen.getAllByText('Tap to add')[0])
+    expect(screen.getByText('+ Add caffeine / sodium (optional)')).toBeTruthy()
+    expect(screen.queryByLabelText('Caffeine (mg)')).toBeNull()
+  })
+
+  it('shows a caffeine/sodium badge on a tile only when the preset has either', () => {
     renderGrid([gel, { ...gel, id: 'p2', label: 'Caffeinated Gel', caffeine: 25 }])
     expect(screen.getByText('+25mg caffeine')).toBeTruthy()
   })
 
-  it('creating a preset with caffeine passes it through', () => {
+  it('creating a preset with caffeine and sodium passes both through', () => {
     const { onCreate } = renderGrid([gel])
     fireEvent.click(screen.getAllByText('Tap to add')[0])
     fireEvent.change(screen.getByPlaceholderText('e.g. Rice Cake'), { target: { value: 'Waffle' } })
     fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '21' } })
-    fireEvent.change(screen.getByPlaceholderText('0 (optional)'), {
-      target: { value: '15' },
-    })
+    fireEvent.click(screen.getByText('+ Add caffeine / sodium (optional)'))
+    fireEvent.change(screen.getByLabelText('Caffeine (mg)'), { target: { value: '15' } })
+    fireEvent.change(screen.getByLabelText('Sodium (mg)'), { target: { value: '110' } })
     fireEvent.click(screen.getByText('Add to Grid'))
     expect(onCreate).toHaveBeenCalledWith({
       label: 'Waffle',
       carbs: 21,
       caffeine: 15,
+      sodium: 110,
       color: expect.any(String),
     })
   })

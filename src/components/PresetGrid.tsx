@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { PresetSlotModal } from './PresetSlotModal'
+import { formatOptionalExtras } from '../lib/format'
 import type { Preset } from '../lib/types'
 
 interface PresetGridProps {
   presets: Preset[]
   onLog: (preset: Preset) => void
-  onCreate: (data: { label: string; carbs: number; caffeine: number; color: string }) => void
+  onCreate: (data: { label: string; carbs: number; caffeine: number; sodium: number; color: string }) => void
   onManage: () => void
 }
 
@@ -36,9 +37,9 @@ export function PresetGrid({ presets, onLog, onCreate, onManage }: PresetGridPro
             >
               {preset.carbs}g carbs
             </span>
-            {preset.caffeine > 0 && (
+            {formatOptionalExtras(preset.caffeine, preset.sodium) && (
               <span className="text-[10px] font-medium text-slate-400">
-                +{preset.caffeine}mg caffeine
+                +{formatOptionalExtras(preset.caffeine, preset.sodium)}
               </span>
             )}
           </button>

@@ -7,6 +7,8 @@ export interface Preset {
   carbs: number
   /** Caffeine (mg), same per-serving/per-container convention as carbs. */
   caffeine: number
+  /** Sodium (mg), same per-serving/per-container convention as carbs. */
+  sodium: number
   color: string
   kind: PresetKind
 }
@@ -28,6 +30,8 @@ export interface Entry {
   carbs: number | null
   /** Caffeine (mg). Unlike carbs, always a known number — defaults to 0 rather than pending. */
   caffeine: number
+  /** Sodium (mg). Same convention as caffeine — always known, defaults to 0. */
+  sodium: number
   presetId: string | null
   drink?: DrinkEntryInfo
 }
