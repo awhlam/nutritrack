@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { StartScreen } from './StartScreen'
+import { CURRENT_VERSION } from '../lib/changelog'
 
 function renderScreen() {
   const onStart = vi.fn()
@@ -37,5 +38,26 @@ describe('StartScreen', () => {
     const { onHistory } = renderScreen()
     fireEvent.click(screen.getByText('History'))
     expect(onHistory).toHaveBeenCalled()
+  })
+
+  it('shows the current version', () => {
+    renderScreen()
+    expect(screen.getByText(`v${CURRENT_VERSION} · What's New`)).toBeTruthy()
+  })
+
+  it('tapping the version opens the changelog, and it does not start tracking', () => {
+    const { onStart } = renderScreen()
+    fireEvent.click(screen.getByText(`v${CURRENT_VERSION} · What's New`))
+    expect(screen.getByText("What's New")).toBeTruthy()
+    expect(screen.getByText(`v${CURRENT_VERSION}`)).toBeTruthy()
+    expect(onStart).not.toHaveBeenCalled()
+  })
+
+  it('closing the changelog returns to the start screen', () => {
+    renderScreen()
+    fireEvent.click(screen.getByText(`v${CURRENT_VERSION} · What's New`))
+    fireEvent.click(screen.getByLabelText('Close'))
+    expect(screen.queryByText("What's New")).toBeNull()
+    expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy()
   })
 })

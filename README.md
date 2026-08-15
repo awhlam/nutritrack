@@ -28,6 +28,7 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 - **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks, reachable from the grid or via a History button in the tracker header.
 - **History** — past activities are saved locally so you can review them later.
 - **Export** — at the end of a session, export the log as a plain-text summary (`.txt`) or a shareable image (`.png`).
+- **Version and changelog** — the current version shows at the bottom of the start screen; tap it for a "What's New" list of what changed in each release, viewable offline like everything else.
 
 All data is stored locally in the browser (`localStorage`) — no account or
 backend required.
@@ -134,9 +135,11 @@ and formatting in `src/lib/format.test.ts`, drink-slot percent derivation in
 activity/caffeine/sodium backfills in `src/lib/storage.test.ts`,
 session/entry/preset/drink-slot state — including the auto-end-on-inactivity
 behavior (using fake timers) — in `src/hooks/useStore.test.ts`, the
-start-then-track flow in `src/App.test.tsx`, and components (mileage
+start-then-track flow in `src/App.test.tsx`, the changelog's ordering and
+version invariants in `src/lib/changelog.test.ts`, and components (mileage
 stepper, drink slots, preset grid, editable session times, the start screen,
-the collapsible caffeine/sodium fields) in `src/components/*.test.tsx`.
+the collapsible caffeine/sodium fields, the What's New changelog) in
+`src/components/*.test.tsx`.
 
 ## Deployment
 
