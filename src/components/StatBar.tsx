@@ -1,8 +1,9 @@
 import {
   carbsPerHour,
+  formatCaffeine,
   formatDuration,
-  formatOptionalExtras,
   formatRate,
+  formatSodium,
   pendingCarbsCount,
   totalCaffeine,
   totalCarbs,
@@ -23,7 +24,14 @@ export function StatBar({ session, now }: StatBarProps) {
   const sodium = totalSodium(session.entries)
   const perHour = carbsPerHour(session, end)
   const pending = pendingCarbsCount(session.entries)
-  const extras = formatOptionalExtras(caffeine, sodium)
+
+  // Caffeine/sodium only show up once you're actually tracking them — added
+  // as full stat cards (not a smaller caption) so they're just as visible as
+  // carbs, right at the top alongside it.
+  const extraStats = [
+    caffeine > 0 && { label: 'Caffeine', value: formatCaffeine(caffeine) },
+    sodium > 0 && { label: 'Sodium', value: formatSodium(sodium) },
+  ].filter((s): s is { label: string; value: string } => s !== false)
 
   return (
     <div>
@@ -32,7 +40,13 @@ export function StatBar({ session, now }: StatBarProps) {
         <Stat label="Carbs" value={`${Math.round(carbs)}g`} accent />
         <Stat label="Carbs/hr" value={formatRate(perHour)} />
       </div>
-      {extras && <p className="mt-1.5 text-center text-xs text-slate-400">{extras}</p>}
+      {extraStats.length > 0 && (
+        <div className={`mt-1.5 grid gap-1.5 ${extraStats.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          {extraStats.map((s) => (
+            <Stat key={s.label} label={s.label} value={s.value} />
+          ))}
+        </div>
+      )}
       {pending > 0 && (
         <p className="mt-1.5 text-center text-xs text-amber-400">
           {pending} {pending === 1 ? 'entry needs' : 'entries need'} a carb count — excluded from totals

@@ -34,13 +34,38 @@ describe('StatBar', () => {
     expect(value.className).toContain('whitespace-nowrap')
   })
 
-  it('shows caffeine/sodium only as a secondary line, only when tracked', () => {
+  it('shows no caffeine/sodium stat cards when neither is tracked', () => {
     const untracked = session({
       entries: [
         { id: 'e1', timestamp: 0, mileage: 0, label: 'Gel', carbs: 25, caffeine: 0, sodium: 0, presetId: null },
       ],
     })
     render(<StatBar session={untracked} now={0} />)
-    expect(screen.queryByText(/caffeine|sodium/)).toBeNull()
+    expect(screen.queryByText('Caffeine')).toBeNull()
+    expect(screen.queryByText('Sodium')).toBeNull()
+  })
+
+  it('shows caffeine and sodium as full stat cards, at the top alongside carbs, once tracked', () => {
+    const tracked = session({
+      entries: [
+        { id: 'e1', timestamp: 0, mileage: 0, label: 'Gel', carbs: 25, caffeine: 25, sodium: 150, presetId: null },
+      ],
+    })
+    render(<StatBar session={tracked} now={0} />)
+    expect(screen.getByText('Caffeine')).toBeTruthy()
+    expect(screen.getByText('25mg')).toBeTruthy()
+    expect(screen.getByText('Sodium')).toBeTruthy()
+    expect(screen.getByText('150mg')).toBeTruthy()
+  })
+
+  it('shows only the tracked one when just caffeine or just sodium is used', () => {
+    const caffeineOnly = session({
+      entries: [
+        { id: 'e1', timestamp: 0, mileage: 0, label: 'Gel', carbs: 25, caffeine: 25, sodium: 0, presetId: null },
+      ],
+    })
+    render(<StatBar session={caffeineOnly} now={0} />)
+    expect(screen.getByText('Caffeine')).toBeTruthy()
+    expect(screen.queryByText('Sodium')).toBeNull()
   })
 })

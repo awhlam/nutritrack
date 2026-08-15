@@ -155,6 +155,18 @@ function App() {
     setScreen('session-detail')
   }
 
+  const handleResetSession = () => {
+    if (!store.activeSession) return
+    if (
+      !window.confirm(
+        'Reset this session? The log, mileage, and drink progress will be cleared and the clock restarted. The name stays.',
+      )
+    ) {
+      return
+    }
+    store.resetSession(store.activeSession.id)
+  }
+
   return (
     <div className="app-shell mx-auto flex min-h-screen max-w-md flex-col bg-slate-950 text-slate-100">
       <UpdatePrompt />
@@ -188,6 +200,7 @@ function App() {
           onManagePresets={() => setScreen('presets')}
           onHistory={() => setScreen('history')}
           onEndSession={handleEndSession}
+          onResetSession={handleResetSession}
           onAssignDrink={handleAssignDrink}
           onCreateAndAssignDrink={handleCreateAndAssignDrink}
           onClearDrink={handleClearDrink}

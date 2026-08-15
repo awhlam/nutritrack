@@ -27,6 +27,15 @@ export function useStore() {
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) ?? null
 
+  /** Fills the two bottle slots from whatever drink presets exist, so a session starts ready to log instead of requiring a manual assign every time. */
+  const defaultDrinkSlots = useCallback((): [DrinkSlot, DrinkSlot] => {
+    const drinkPresets = presets.filter((p) => p.kind === 'drink')
+    return [
+      { presetId: drinkPresets[0]?.id ?? null, fillId: drinkPresets[0] ? 1 : 0 },
+      { presetId: drinkPresets[1]?.id ?? null, fillId: drinkPresets[1] ? 1 : 0 },
+    ]
+  }, [presets])
+
   const startSession = useCallback(() => {
     const now = Date.now()
     const session: Session = {
@@ -36,16 +45,29 @@ export function useStore() {
       endedAt: null,
       currentMileage: 0,
       entries: [],
-      drinkSlots: [
-        { presetId: null, fillId: 0 },
-        { presetId: null, fillId: 0 },
-      ],
+      drinkSlots: defaultDrinkSlots(),
       lastActivityAt: now,
     }
     setSessions((prev) => [...prev, session])
     setActiveSessionId(session.id)
     return session.id
-  }, [])
+  }, [defaultDrinkSlots])
+
+  /** Restarts the clock and clears the log/mileage/drink progress, but keeps the session's id and name so you don't have to retype it. */
+  const resetSession = useCallback(
+    (sessionId: string) => {
+      const now = Date.now()
+      const drinkSlots = defaultDrinkSlots()
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === sessionId
+            ? { ...s, startedAt: now, currentMileage: 0, entries: [], drinkSlots, lastActivityAt: now }
+            : s,
+        ),
+      )
+    },
+    [defaultDrinkSlots],
+  )
 
   const endSession = useCallback((sessionId: string, endedAt: number = Date.now()) => {
     setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, endedAt } : s)))
@@ -205,6 +227,7 @@ export function useStore() {
     activeSession,
     startSession,
     endSession,
+    resetSession,
     deleteSession,
     addEntry,
     updateEntry,

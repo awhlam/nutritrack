@@ -9,6 +9,15 @@ export interface ChangelogEntry {
 // screen are built from.
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.7.0',
+    date: '2026-08-15',
+    changes: [
+      'Drink bottle slots fill automatically from your saved drink presets when a session starts or resets',
+      'Added an explicit Reset button to restart the clock and clear the log, mileage, and drink progress without ending the session or retyping its name',
+      "Caffeine and sodium now show as their own stat cards at the top, alongside carbs, once you're tracking either",
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-08-15',
     changes: [
