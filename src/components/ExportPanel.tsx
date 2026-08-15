@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { toPng } from 'html-to-image'
 import { ExportCard } from './ExportCard'
-import { buildTextExport, downloadTextFile } from '../lib/format'
+import { ExportTextModal } from './ExportTextModal'
+import { buildTextExport } from '../lib/format'
 import type { Session } from '../lib/types'
 
 interface ExportPanelProps {
@@ -20,11 +21,7 @@ export function ExportPanel({ session }: ExportPanelProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const exportText = () => {
-    const text = buildTextExport(session)
-    downloadTextFile(`${fileBaseName(session)}.txt`, text)
-  }
+  const [showText, setShowText] = useState(false)
 
   const exportImage = async () => {
     if (!cardRef.current) return
@@ -66,7 +63,7 @@ export function ExportPanel({ session }: ExportPanelProps) {
       <div className="flex gap-3">
         <button
           type="button"
-          onClick={exportText}
+          onClick={() => setShowText(true)}
           className="flex-1 rounded-xl bg-slate-800 py-3 text-base font-semibold text-white active:bg-slate-700"
         >
           📄 Export Text
@@ -85,6 +82,10 @@ export function ExportPanel({ session }: ExportPanelProps) {
       <div className="pointer-events-none fixed left-[-9999px] top-0 opacity-100">
         <ExportCard ref={cardRef} session={session} />
       </div>
+
+      {showText && (
+        <ExportTextModal text={buildTextExport(session)} onClose={() => setShowText(false)} />
+      )}
     </div>
   )
 }
