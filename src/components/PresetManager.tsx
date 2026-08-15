@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { OptionalNutrientFields } from './OptionalNutrientFields'
 import { PRESET_COLORS } from '../lib/colors'
+import { formatOptionalExtras } from '../lib/format'
 import type { Preset, PresetKind } from '../lib/types'
 
 interface PresetManagerProps {
@@ -83,7 +85,8 @@ export function PresetManager({ presets, onAdd, onUpdate, onDelete, onClose }: P
                   <div className="font-medium text-white">{preset.label}</div>
                   <div className="text-xs text-slate-400">
                     {preset.carbs}g {kind === 'drink' ? 'total' : 'carbs'}
-                    {preset.caffeine > 0 && ` · ${preset.caffeine}mg caffeine`}
+                    {formatOptionalExtras(preset.caffeine, preset.sodium) &&
+                      ` · ${formatOptionalExtras(preset.caffeine, preset.sodium)}`}
                   </div>
                 </div>
               </div>
@@ -147,16 +150,20 @@ function PresetForm({
   const [label, setLabel] = useState(initial?.label ?? '')
   const [carbs, setCarbs] = useState(initial ? String(initial.carbs) : '')
   const [caffeine, setCaffeine] = useState(initial?.caffeine ? String(initial.caffeine) : '')
+  const [sodium, setSodium] = useState(initial?.sodium ? String(initial.sodium) : '')
   const [color, setColor] = useState(initial?.color ?? PRESET_COLORS[0])
 
   const carbsNum = parseFloat(carbs)
   const caffeineNum = caffeine.trim() === '' ? 0 : parseFloat(caffeine)
+  const sodiumNum = sodium.trim() === '' ? 0 : parseFloat(sodium)
   const valid =
     label.trim().length > 0 &&
     !Number.isNaN(carbsNum) &&
     carbsNum >= 0 &&
     !Number.isNaN(caffeineNum) &&
-    caffeineNum >= 0
+    caffeineNum >= 0 &&
+    !Number.isNaN(sodiumNum) &&
+    sodiumNum >= 0
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-slate-800/60 p-4">
@@ -176,13 +183,13 @@ function PresetForm({
         placeholder={carbsLabel}
         className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
       />
-      <input
-        type="number"
-        inputMode="decimal"
-        value={caffeine}
-        onChange={(e) => setCaffeine(e.target.value)}
-        placeholder={kind === 'drink' ? 'Total caffeine in the full bottle (mg, optional)' : 'Caffeine per serving (mg, optional)'}
-        className="w-full rounded-lg bg-slate-900 px-3 py-2 text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
+      <OptionalNutrientFields
+        caffeine={caffeine}
+        onCaffeineChange={setCaffeine}
+        caffeineLabel={kind === 'drink' ? 'Total caffeine (mg)' : 'Caffeine (mg)'}
+        sodium={sodium}
+        onSodiumChange={setSodium}
+        sodiumLabel={kind === 'drink' ? 'Total sodium (mg)' : 'Sodium (mg)'}
       />
       <div className="flex flex-wrap gap-2">
         {PRESET_COLORS.map((c) => (
@@ -207,7 +214,9 @@ function PresetForm({
         <button
           type="button"
           disabled={!valid}
-          onClick={() => onSave({ label: label.trim(), carbs: carbsNum, caffeine: caffeineNum, color, kind })}
+          onClick={() =>
+            onSave({ label: label.trim(), carbs: carbsNum, caffeine: caffeineNum, sodium: sodiumNum, color, kind })
+          }
           className="flex-1 rounded-lg bg-emerald-500 py-2 text-sm font-bold text-slate-950 disabled:opacity-40"
         >
           Save

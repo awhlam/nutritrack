@@ -8,6 +8,7 @@ const waterPreset: Preset = {
   label: 'Water',
   carbs: 0,
   caffeine: 0,
+  sodium: 0,
   color: '#38bdf8',
   kind: 'drink',
 }
@@ -17,6 +18,7 @@ const mixPreset: Preset = {
   label: 'Carb Mix',
   carbs: 60,
   caffeine: 80,
+  sodium: 200,
   color: '#3b82f6',
   kind: 'drink',
 }
@@ -29,6 +31,7 @@ function drinkEntry(percent: number, slot: 0 | 1 = 0, fillId = 1): Entry {
     label: 'Carb Mix',
     carbs: (percent / 100) * mixPreset.carbs,
     caffeine: (percent / 100) * mixPreset.caffeine,
+    sodium: (percent / 100) * mixPreset.sodium,
     presetId: mixPreset.id,
     drink: { slot, fillId, percent },
   }
@@ -94,11 +97,16 @@ describe('DrinkSlots — unassigned slot', () => {
       target: { value: '45' },
     })
     fireEvent.click(screen.getByText('Create & Use'))
-    expect(onCreateAndAssign).toHaveBeenCalledWith(1, { label: 'Electrolyte Mix', carbs: 45, caffeine: 0 })
+    expect(onCreateAndAssign).toHaveBeenCalledWith(1, {
+      label: 'Electrolyte Mix',
+      carbs: 45,
+      caffeine: 0,
+      sodium: 0,
+    })
     expect(onAssign).not.toHaveBeenCalled()
   })
 
-  it('creating a new drink with caffeine passes it through', () => {
+  it('creating a new drink with caffeine and sodium passes both through', () => {
     const { onCreateAndAssign } = renderSlots()
     fireEvent.click(screen.getByText('Add Drink to Bottle 1'))
     fireEvent.click(screen.getByText('+ New drink'))
@@ -108,11 +116,11 @@ describe('DrinkSlots — unassigned slot', () => {
     fireEvent.change(screen.getByPlaceholderText('Total carbs in the full bottle (g)'), {
       target: { value: '40' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Total caffeine in the full bottle (mg, optional)'), {
-      target: { value: '35' },
-    })
+    fireEvent.click(screen.getByText('+ Add caffeine / sodium (optional)'))
+    fireEvent.change(screen.getByLabelText('Total caffeine (mg)'), { target: { value: '35' } })
+    fireEvent.change(screen.getByLabelText('Total sodium (mg)'), { target: { value: '75' } })
     fireEvent.click(screen.getByText('Create & Use'))
-    expect(onCreateAndAssign).toHaveBeenCalledWith(0, { label: 'Cola', carbs: 40, caffeine: 35 })
+    expect(onCreateAndAssign).toHaveBeenCalledWith(0, { label: 'Cola', carbs: 40, caffeine: 35, sodium: 75 })
   })
 })
 

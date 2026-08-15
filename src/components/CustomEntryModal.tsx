@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal } from './Modal'
+import { OptionalNutrientFields } from './OptionalNutrientFields'
 import { applyTimeInput, timeInputValue } from '../lib/format'
 
 interface CustomEntryModalProps {
@@ -8,6 +9,7 @@ interface CustomEntryModalProps {
     label: string
     carbs: number | null
     caffeine: number
+    sodium: number
     timestamp: number
     mileage: number
   }) => void
@@ -23,17 +25,21 @@ export function CustomEntryModal({
   const [carbs, setCarbs] = useState('')
   const [carbsPending, setCarbsPending] = useState(false)
   const [caffeine, setCaffeine] = useState('')
+  const [sodium, setSodium] = useState('')
   const [timestamp, setTimestamp] = useState(() => Date.now())
   const [mileage, setMileage] = useState(String(defaultMileage.toFixed(1)))
 
   const carbsNum = parseFloat(carbs)
   const caffeineNum = caffeine.trim() === '' ? 0 : parseFloat(caffeine)
+  const sodiumNum = sodium.trim() === '' ? 0 : parseFloat(sodium)
   const mileageNum = parseFloat(mileage)
   const valid =
     label.trim().length > 0 &&
     (carbsPending || (!Number.isNaN(carbsNum) && carbsNum >= 0)) &&
     !Number.isNaN(caffeineNum) &&
-    caffeineNum >= 0
+    caffeineNum >= 0 &&
+    !Number.isNaN(sodiumNum) &&
+    sodiumNum >= 0
 
   const handleSave = () => {
     if (!valid) return
@@ -41,6 +47,7 @@ export function CustomEntryModal({
       label: label.trim(),
       carbs: carbsPending ? null : carbsNum,
       caffeine: caffeineNum,
+      sodium: sodiumNum,
       timestamp,
       mileage: Number.isNaN(mileageNum) ? defaultMileage : mileageNum,
     })
@@ -85,19 +92,14 @@ export function CustomEntryModal({
           />
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">
-            Caffeine (mg, optional)
-          </label>
-          <input
-            type="number"
-            inputMode="decimal"
-            value={caffeine}
-            onChange={(e) => setCaffeine(e.target.value)}
-            placeholder="0 (optional)"
-            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
-          />
-        </div>
+        <OptionalNutrientFields
+          caffeine={caffeine}
+          onCaffeineChange={setCaffeine}
+          caffeineLabel="Caffeine (mg)"
+          sodium={sodium}
+          onSodiumChange={setSodium}
+          sodiumLabel="Sodium (mg)"
+        />
 
         <div className="grid grid-cols-2 gap-3">
           <div>

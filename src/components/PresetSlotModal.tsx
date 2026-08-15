@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Modal } from './Modal'
+import { OptionalNutrientFields } from './OptionalNutrientFields'
 import { PRESET_COLORS } from '../lib/colors'
 
 interface PresetSlotModalProps {
-  onSave: (data: { label: string; carbs: number; caffeine: number; color: string }) => void
+  onSave: (data: { label: string; carbs: number; caffeine: number; sodium: number; color: string }) => void
   onClose: () => void
 }
 
@@ -11,20 +12,24 @@ export function PresetSlotModal({ onSave, onClose }: PresetSlotModalProps) {
   const [label, setLabel] = useState('')
   const [carbs, setCarbs] = useState('')
   const [caffeine, setCaffeine] = useState('')
+  const [sodium, setSodium] = useState('')
   const [color, setColor] = useState(PRESET_COLORS[0])
 
   const carbsNum = parseFloat(carbs)
   const caffeineNum = caffeine.trim() === '' ? 0 : parseFloat(caffeine)
+  const sodiumNum = sodium.trim() === '' ? 0 : parseFloat(sodium)
   const valid =
     label.trim().length > 0 &&
     !Number.isNaN(carbsNum) &&
     carbsNum >= 0 &&
     !Number.isNaN(caffeineNum) &&
-    caffeineNum >= 0
+    caffeineNum >= 0 &&
+    !Number.isNaN(sodiumNum) &&
+    sodiumNum >= 0
 
   const handleSave = () => {
     if (!valid) return
-    onSave({ label: label.trim(), carbs: carbsNum, caffeine: caffeineNum, color })
+    onSave({ label: label.trim(), carbs: carbsNum, caffeine: caffeineNum, sodium: sodiumNum, color })
   }
 
   return (
@@ -56,19 +61,14 @@ export function PresetSlotModal({ onSave, onClose }: PresetSlotModalProps) {
           />
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">
-            Caffeine per serving (mg, optional)
-          </label>
-          <input
-            type="number"
-            inputMode="decimal"
-            value={caffeine}
-            onChange={(e) => setCaffeine(e.target.value)}
-            placeholder="0 (optional)"
-            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-lg text-white outline-none ring-1 ring-slate-700 focus:ring-emerald-500"
-          />
-        </div>
+        <OptionalNutrientFields
+          caffeine={caffeine}
+          onCaffeineChange={setCaffeine}
+          caffeineLabel="Caffeine (mg)"
+          sodium={sodium}
+          onSodiumChange={setSodium}
+          sodiumLabel="Sodium (mg)"
+        />
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-400">Color</label>

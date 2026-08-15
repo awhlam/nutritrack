@@ -15,11 +15,18 @@ interface TrackerProps {
   presets: Preset[]
   now: number
   onLogPreset: (preset: Preset) => void
-  onCreatePreset: (data: { label: string; carbs: number; caffeine: number; color: string }) => void
+  onCreatePreset: (data: {
+    label: string
+    carbs: number
+    caffeine: number
+    sodium: number
+    color: string
+  }) => void
   onLogCustom: (data: {
     label: string
     carbs: number | null
     caffeine: number
+    sodium: number
     timestamp: number
     mileage: number
   }) => void
@@ -34,7 +41,7 @@ interface TrackerProps {
   onAssignDrink: (slotIndex: 0 | 1, presetId: string) => void
   onCreateAndAssignDrink: (
     slotIndex: 0 | 1,
-    data: { label: string; carbs: number; caffeine: number },
+    data: { label: string; carbs: number; caffeine: number; sodium: number },
   ) => void
   onClearDrink: (slotIndex: 0 | 1) => void
   onLogDrink: (slotIndex: 0 | 1, targetPercent: number) => void

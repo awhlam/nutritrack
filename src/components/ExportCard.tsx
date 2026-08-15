@@ -1,14 +1,15 @@
 import { forwardRef } from 'react'
 import {
   carbsPerHour,
-  formatCaffeine,
   formatCarbs,
   formatClockTimeShort,
   formatDuration,
   formatMileage,
+  formatOptionalExtras,
   formatRate,
   totalCaffeine,
   totalCarbs,
+  totalSodium,
 } from '../lib/format'
 import type { Session } from '../lib/types'
 
@@ -21,6 +22,8 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
     const end = session.endedAt ?? Date.now()
     const carbs = totalCarbs(session.entries)
     const caffeine = totalCaffeine(session.entries)
+    const sodium = totalSodium(session.entries)
+    const extras = formatOptionalExtras(caffeine, sodium)
     const perHour = carbsPerHour(session, end)
     const sorted = [...session.entries].sort((a, b) => a.timestamp - b.timestamp)
     const dateStr = new Date(session.startedAt).toLocaleDateString(undefined, {
@@ -43,12 +46,12 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
           <div className="text-sm text-slate-400">{dateStr}</div>
         </div>
 
-        <div className="mb-5 grid grid-cols-4 gap-2">
+        <div className="mb-3 grid grid-cols-3 gap-2">
           <CardStat label="Duration" value={formatDuration(end - session.startedAt)} />
           <CardStat label="Carbs" value={`${Math.round(carbs)}g`} accent />
-          <CardStat label="Caffeine" value={`${Math.round(caffeine)}mg`} />
           <CardStat label="Carbs/hr" value={formatRate(perHour)} />
         </div>
+        {extras && <div className="mb-3 text-center text-xs text-slate-400">{extras}</div>}
 
         <div className="rounded-xl bg-slate-900">
           <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
@@ -80,8 +83,10 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(
                   >
                     {formatCarbs(e.carbs)}
                   </span>
-                  {e.caffeine > 0 && (
-                    <span className="text-[10px] text-slate-500">{formatCaffeine(e.caffeine)}</span>
+                  {formatOptionalExtras(e.caffeine, e.sodium) && (
+                    <span className="text-[10px] text-slate-500">
+                      {formatOptionalExtras(e.caffeine, e.sodium)}
+                    </span>
                   )}
                 </span>
               </div>

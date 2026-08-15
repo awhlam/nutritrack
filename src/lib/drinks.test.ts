@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drinkDeltaCaffeine, drinkDeltaCarbs, slotPercent } from './drinks'
+import { drinkDeltaCaffeine, drinkDeltaCarbs, drinkDeltaSodium, slotPercent } from './drinks'
 import type { Entry, Session } from './types'
 
 function entry(partial: Partial<Entry> = {}): Entry {
@@ -10,6 +10,7 @@ function entry(partial: Partial<Entry> = {}): Entry {
     label: 'Water',
     carbs: 0,
     caffeine: 0,
+    sodium: 0,
     presetId: 'preset-water',
     ...partial,
   }
@@ -143,5 +144,16 @@ describe('drinkDeltaCaffeine', () => {
 
   it('is zero for a caffeine-free drink', () => {
     expect(drinkDeltaCaffeine(0, 50)).toBe(0)
+  })
+})
+
+describe('drinkDeltaSodium', () => {
+  it('computes the proportional share of the container', () => {
+    expect(drinkDeltaSodium(400, 25)).toBe(100)
+    expect(drinkDeltaSodium(400, 100)).toBe(400)
+  })
+
+  it('is zero for a sodium-free drink', () => {
+    expect(drinkDeltaSodium(0, 50)).toBe(0)
   })
 })

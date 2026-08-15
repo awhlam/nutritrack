@@ -9,11 +9,14 @@ import {
   formatDuration,
   formatMileage,
   formatMileageNumber,
+  formatOptionalExtras,
   formatRate,
+  formatSodium,
   pendingCarbsCount,
   timeInputValue,
   totalCaffeine,
   totalCarbs,
+  totalSodium,
 } from './format'
 import type { Entry, Session } from './types'
 
@@ -27,6 +30,7 @@ function entry(partial: Partial<Entry> = {}): Entry {
     label: 'Energy Gel',
     carbs: 25,
     caffeine: 0,
+    sodium: 0,
     presetId: null,
     ...partial,
   }
@@ -138,6 +142,41 @@ describe('formatCaffeine', () => {
   })
 })
 
+describe('totalSodium', () => {
+  it('sums sodium across entries', () => {
+    expect(totalSodium([entry({ sodium: 100 }), entry({ sodium: 50 })])).toBe(150)
+  })
+
+  it('is zero for an empty log or entries with no sodium', () => {
+    expect(totalSodium([])).toBe(0)
+    expect(totalSodium([entry({ sodium: 0 })])).toBe(0)
+  })
+})
+
+describe('formatSodium', () => {
+  it('rounds and appends the unit', () => {
+    expect(formatSodium(149.6)).toBe('150mg')
+  })
+})
+
+describe('formatOptionalExtras', () => {
+  it('is empty when neither caffeine nor sodium is tracked', () => {
+    expect(formatOptionalExtras(0, 0)).toBe('')
+  })
+
+  it('shows only caffeine when sodium is unset', () => {
+    expect(formatOptionalExtras(25, 0)).toBe('25mg caffeine')
+  })
+
+  it('shows only sodium when caffeine is unset', () => {
+    expect(formatOptionalExtras(0, 150)).toBe('150mg sodium')
+  })
+
+  it('joins both when both are tracked', () => {
+    expect(formatOptionalExtras(25, 150)).toBe('25mg caffeine · 150mg sodium')
+  })
+})
+
 describe('elapsedMs', () => {
   it('measures against now while the session is open', () => {
     expect(elapsedMs(session({ startedAt: 1000 }), 5000)).toBe(4000)
@@ -218,27 +257,37 @@ describe('buildTextExport', () => {
     expect(text).toContain('NutriTrack')
     expect(text).toContain('Duration:       2h 0m')
     expect(text).toContain('Total Carbs:    52 g')
-    expect(text).toContain('Total Caffeine: 0 mg')
     expect(text).toContain('Avg Carbs/hr:   26 g/hr')
     expect(text).toContain('Entries:        2')
   })
 
-  it('includes the total caffeine across entries', () => {
-    const withCaffeine = session({
-      startedAt,
-      endedAt: startedAt + HOUR,
-      entries: [entry({ caffeine: 25 }), entry({ caffeine: 15 })],
-    })
-    expect(buildTextExport(withCaffeine)).toContain('Total Caffeine: 40 mg')
+  it('omits the Total Caffeine and Total Sodium lines when neither is tracked', () => {
+    const text = buildTextExport(s)
+    expect(text).not.toContain('Total Caffeine')
+    expect(text).not.toContain('Total Sodium')
   })
 
-  it('includes each entry caffeine amount in the table', () => {
-    const withCaffeine = session({
+  it('includes the total caffeine and sodium across entries, only when used', () => {
+    const withExtras = session({
       startedAt,
       endedAt: startedAt + HOUR,
-      entries: [entry({ label: 'Energy Gel', caffeine: 25 })],
+      entries: [
+        entry({ caffeine: 25, sodium: 100 }),
+        entry({ caffeine: 15, sodium: 50 }),
+      ],
     })
-    expect(buildTextExport(withCaffeine)).toMatch(/Energy Gel\s+25g\s+25mg/)
+    const text = buildTextExport(withExtras)
+    expect(text).toContain('Total Caffeine: 40 mg')
+    expect(text).toContain('Total Sodium:   150 mg')
+  })
+
+  it('includes each entry caffeine/sodium amount in the table, only when nonzero', () => {
+    const withExtras = session({
+      startedAt,
+      endedAt: startedAt + HOUR,
+      entries: [entry({ label: 'Energy Gel', caffeine: 25, sodium: 100 })],
+    })
+    expect(buildTextExport(withExtras)).toMatch(/Energy Gel\s+25g\s+25mg caffeine · 100mg sodium/)
   })
 
   it('lists entries in chronological order', () => {

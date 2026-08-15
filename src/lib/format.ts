@@ -69,6 +69,28 @@ export function formatCaffeine(caffeine: number): string {
   return `${Math.round(caffeine)}mg`
 }
 
+export function totalSodium(entries: Entry[]): number {
+  return entries.reduce((sum, e) => sum + e.sodium, 0)
+}
+
+export function formatSodium(sodium: number): string {
+  return `${Math.round(sodium)}mg`
+}
+
+/**
+ * Caffeine/sodium are optional per-item, so only mention the ones actually in
+ * use rather than always showing "0mg" — keeps rows/cards uncluttered for the
+ * common case where neither is tracked.
+ */
+export function formatOptionalExtras(caffeine: number, sodium: number): string {
+  return [
+    caffeine > 0 ? `${formatCaffeine(caffeine)} caffeine` : null,
+    sodium > 0 ? `${formatSodium(sodium)} sodium` : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join(' · ')
+}
+
 const MIN_ELAPSED_FOR_RATE_MS = 60_000
 
 export function carbsPerHour(session: Session, now: number): number | null {
@@ -93,6 +115,7 @@ export function buildTextExport(session: Session): string {
   const duration = formatDuration(end - session.startedAt)
   const carbs = totalCarbs(session.entries)
   const caffeine = totalCaffeine(session.entries)
+  const sodium = totalSodium(session.entries)
   const perHour = carbsPerHour(session, end)
   const pending = pendingCarbsCount(session.entries)
 
@@ -101,12 +124,13 @@ export function buildTextExport(session: Session): string {
   lines.push('')
   lines.push(`Duration:       ${duration}`)
   lines.push(`Total Carbs:    ${Math.round(carbs)} g${pending > 0 ? ' (excludes pending entries below)' : ''}`)
-  lines.push(`Total Caffeine: ${Math.round(caffeine)} mg`)
+  if (caffeine > 0) lines.push(`Total Caffeine: ${Math.round(caffeine)} mg`)
+  if (sodium > 0) lines.push(`Total Sodium:   ${Math.round(sodium)} mg`)
   lines.push(`Avg Carbs/hr:   ${perHour === null ? '—' : `${Math.round(perHour)} g/hr`}`)
   lines.push(`Entries:        ${session.entries.length}`)
   lines.push('')
-  lines.push('Time       Mileage   Item                      Carbs    Caffeine')
-  lines.push('-'.repeat(66))
+  lines.push('Time       Mileage   Item                      Carbs    Extras')
+  lines.push('-'.repeat(62))
 
   const sorted = [...session.entries].sort((a, b) => a.timestamp - b.timestamp)
   for (const e of sorted) {
@@ -115,7 +139,8 @@ export function buildTextExport(session: Session): string {
     const percentSuffix = e.drink ? ` (+${e.drink.percent}%)` : ''
     const label = `${e.label}${percentSuffix}`.padEnd(25).slice(0, 25)
     const carbsStr = formatCarbs(e.carbs).padEnd(8)
-    lines.push(`${time} ${mile} ${label} ${carbsStr} ${formatCaffeine(e.caffeine)}`)
+    const extras = formatOptionalExtras(e.caffeine, e.sodium)
+    lines.push(`${time} ${mile} ${label} ${carbsStr} ${extras}`.trimEnd())
   }
 
   lines.push('')
