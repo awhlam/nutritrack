@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyTimeInput,
   buildTextExport,
+  caffeinePerHour,
   carbsPerHour,
   elapsedMs,
   formatCaffeine,
@@ -13,6 +14,7 @@ import {
   formatRate,
   formatSodium,
   pendingCarbsCount,
+  sodiumPerHour,
   timeInputValue,
   totalCaffeine,
   totalCarbs,
@@ -211,13 +213,41 @@ describe('carbsPerHour', () => {
   })
 })
 
+describe('caffeinePerHour', () => {
+  it('returns null before a minute has elapsed', () => {
+    const s = session({ startedAt: 0, entries: [entry({ caffeine: 25 })] })
+    expect(caffeinePerHour(s, 30_000)).toBeNull()
+  })
+
+  it('computes the hourly rate once enough time has passed', () => {
+    const s = session({ startedAt: 0, entries: [entry({ caffeine: 25 }), entry({ caffeine: 25 })] })
+    expect(caffeinePerHour(s, 2 * HOUR)).toBe(25)
+  })
+})
+
+describe('sodiumPerHour', () => {
+  it('returns null before a minute has elapsed', () => {
+    const s = session({ startedAt: 0, entries: [entry({ sodium: 150 })] })
+    expect(sodiumPerHour(s, 30_000)).toBeNull()
+  })
+
+  it('computes the hourly rate once enough time has passed', () => {
+    const s = session({ startedAt: 0, entries: [entry({ sodium: 150 })] })
+    expect(sodiumPerHour(s, HOUR / 2)).toBe(300)
+  })
+})
+
 describe('formatRate', () => {
   it('renders an em dash for an unavailable rate', () => {
     expect(formatRate(null)).toBe('—')
   })
 
-  it('rounds to whole grams', () => {
+  it('rounds to whole grams by default', () => {
     expect(formatRate(63.4)).toBe('63g')
+  })
+
+  it('uses mg when given that unit', () => {
+    expect(formatRate(63.4, 'mg')).toBe('63mg')
   })
 })
 
@@ -261,13 +291,15 @@ describe('buildTextExport', () => {
     expect(text).toContain('Entries:        2')
   })
 
-  it('omits the Total Caffeine and Total Sodium lines when neither is tracked', () => {
+  it('omits the Total/Avg Caffeine and Sodium lines when neither is tracked', () => {
     const text = buildTextExport(s)
     expect(text).not.toContain('Total Caffeine')
     expect(text).not.toContain('Total Sodium')
+    expect(text).not.toContain('Caffeine/hr')
+    expect(text).not.toContain('Sodium/hr')
   })
 
-  it('includes the total caffeine and sodium across entries, only when used', () => {
+  it('includes the total and average-per-hour caffeine and sodium, only when used', () => {
     const withExtras = session({
       startedAt,
       endedAt: startedAt + HOUR,
@@ -279,6 +311,8 @@ describe('buildTextExport', () => {
     const text = buildTextExport(withExtras)
     expect(text).toContain('Total Caffeine: 40 mg')
     expect(text).toContain('Total Sodium:   150 mg')
+    expect(text).toContain('Avg Caffeine/hr: 40 mg/hr')
+    expect(text).toContain('Avg Sodium/hr:  150 mg/hr')
   })
 
   it('includes each entry caffeine/sodium amount in the table, only when nonzero', () => {

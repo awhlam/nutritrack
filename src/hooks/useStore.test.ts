@@ -29,10 +29,6 @@ describe('useStore sessions', () => {
     expect(result.current.activeSession?.entries).toEqual([])
     expect(result.current.activeSession?.currentMileage).toBe(0)
     expect(result.current.activeSession?.endedAt).toBeNull()
-    expect(result.current.activeSession?.drinkSlots).toEqual([
-      { presetId: null, fillId: 0 },
-      { presetId: null, fillId: 0 },
-    ])
     expect(result.current.activeSession?.name).toBe('')
   })
 
@@ -84,6 +80,47 @@ describe('useStore sessions', () => {
     const second = renderHook(() => useStore())
     expect(second.result.current.sessions).toHaveLength(1)
     expect(second.result.current.activeSession).not.toBeNull()
+  })
+})
+
+describe('useStore default drink slots', () => {
+  it('auto-assigns existing drink presets to both bottle slots on start', () => {
+    // The default presets already include two drinks (Water, Carb Drink Mix).
+    const { result } = renderHook(() => useStore())
+    act(() => {
+      result.current.startSession()
+    })
+    const slots = result.current.activeSession!.drinkSlots
+    expect(slots[0]).toEqual({ presetId: 'preset-water', fillId: 1 })
+    expect(slots[1]).toEqual({ presetId: 'preset-carb-mix', fillId: 1 })
+  })
+
+  it('auto-assigns just the first slot when only one drink preset exists', () => {
+    const { result } = renderHook(() => useStore())
+    act(() => {
+      result.current.deletePreset('preset-carb-mix')
+    })
+    act(() => {
+      result.current.startSession()
+    })
+    const slots = result.current.activeSession!.drinkSlots
+    expect(slots[0]).toEqual({ presetId: 'preset-water', fillId: 1 })
+    expect(slots[1]).toEqual({ presetId: null, fillId: 0 })
+  })
+
+  it('leaves both slots empty when there are no drink presets at all', () => {
+    const { result } = renderHook(() => useStore())
+    act(() => {
+      result.current.deletePreset('preset-water')
+      result.current.deletePreset('preset-carb-mix')
+    })
+    act(() => {
+      result.current.startSession()
+    })
+    expect(result.current.activeSession!.drinkSlots).toEqual([
+      { presetId: null, fillId: 0 },
+      { presetId: null, fillId: 0 },
+    ])
   })
 })
 
@@ -224,8 +261,15 @@ describe('useStore entries', () => {
 })
 
 describe('useStore drink slots', () => {
+  // Isolate assign/clear semantics from the default-assignment behavior
+  // (covered separately above) by starting with no drink presets, so slots
+  // begin unassigned and fillId math is easy to reason about.
   function startedStore() {
     const hook = renderHook(() => useStore())
+    act(() => {
+      hook.result.current.deletePreset('preset-water')
+      hook.result.current.deletePreset('preset-carb-mix')
+    })
     let id = ''
     act(() => {
       id = hook.result.current.startSession()
@@ -290,6 +334,75 @@ describe('useStore drink slots', () => {
     })
     expect(hook.result.current.presets.map((p) => p.id)).toContain('custom-drink-1')
     expect(hook.result.current.activeSession!.drinkSlots[0].presetId).toBe('custom-drink-1')
+  })
+})
+
+describe('useStore resetSession', () => {
+  it('clears entries, mileage, and re-applies the default drink slots, but keeps the id and name', () => {
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      result.current.setSessionName(id, 'Boston Marathon')
+      result.current.setSessionMileage(id, 12)
+      result.current.addEntry(id, {
+        timestamp: Date.now(),
+        mileage: 12,
+        label: 'Energy Gel',
+        carbs: 30,
+        caffeine: 0,
+        sodium: 0,
+        presetId: 'preset-gel',
+      })
+      result.current.assignDrinkSlot(id, 0, 'preset-carb-mix')
+    })
+    expect(result.current.activeSession!.entries).toHaveLength(1)
+
+    act(() => {
+      result.current.resetSession(id)
+    })
+
+    expect(result.current.activeSession!.id).toBe(id)
+    expect(result.current.activeSession!.name).toBe('Boston Marathon')
+    expect(result.current.activeSession!.entries).toEqual([])
+    expect(result.current.activeSession!.currentMileage).toBe(0)
+    expect(result.current.activeSession!.drinkSlots).toEqual([
+      { presetId: 'preset-water', fillId: 1 },
+      { presetId: 'preset-carb-mix', fillId: 1 },
+    ])
+  })
+
+  it('restarts the clock', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      vi.setSystemTime(60_000)
+    })
+    act(() => {
+      result.current.resetSession(id)
+    })
+    expect(result.current.activeSession!.startedAt).toBe(60_000)
+    expect(result.current.activeSession!.lastActivityAt).toBe(60_000)
+  })
+
+  it('does not end the session — it stays active', () => {
+    const { result } = renderHook(() => useStore())
+    let id = ''
+    act(() => {
+      id = result.current.startSession()
+    })
+    act(() => {
+      result.current.resetSession(id)
+    })
+    expect(result.current.activeSession?.id).toBe(id)
+    expect(result.current.activeSession?.endedAt).toBeNull()
   })
 })
 

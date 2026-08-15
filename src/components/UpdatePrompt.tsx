@@ -1,24 +1,7 @@
-import { useRegisterSW } from 'virtual:pwa-register/react'
-
-// Browsers only byte-compare the service worker file on navigation, and cap
-// that check at a 24h staleness limit regardless of server cache headers —
-// so without an explicit poll, a reopened tab can sit on a stale version for
-// a long time. Checking every 30 minutes while the app is open catches new
-// deploys quickly without hammering the network.
-const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000
+import { useAppUpdate } from '../hooks/appUpdateContext'
 
 export function UpdatePrompt() {
-  const {
-    needRefresh: [needRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
-    onRegisteredSW(_swUrl, registration) {
-      if (!registration) return
-      window.setInterval(() => {
-        registration.update()
-      }, UPDATE_CHECK_INTERVAL_MS)
-    },
-  })
+  const { needRefresh, applyUpdate } = useAppUpdate()
 
   if (!needRefresh) return null
 
@@ -30,7 +13,7 @@ export function UpdatePrompt() {
       <span>A new version of NutriTrack is available</span>
       <button
         type="button"
-        onClick={() => updateServiceWorker(true)}
+        onClick={applyUpdate}
         className="shrink-0 rounded-full bg-slate-950 px-3 py-1 text-white active:bg-slate-800"
       >
         Refresh

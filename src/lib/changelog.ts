@@ -9,6 +9,25 @@ export interface ChangelogEntry {
 // screen are built from.
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.8.0',
+    date: '2026-08-15',
+    changes: [
+      'Export Text now shows the summary on-screen with a Copy to Clipboard button, instead of downloading a .txt file',
+      'Added sodium/hour to match carbs/hour and caffeine/hour',
+      'Carbs, caffeine, and sodium stat cards are now compact — total and per-hour rate shown together in one card per nutrient',
+      'Added a "Check for Updates" button on the start screen, and the app now checks for a new version as soon as it opens — no more clearing browser data to see changes',
+    ],
+  },
+  {
+    version: '1.7.0',
+    date: '2026-08-15',
+    changes: [
+      'Drink bottle slots fill automatically from your saved drink presets when a session starts or resets',
+      'Added an explicit Reset button to restart the clock and clear the log, mileage, and drink progress without ending the session or retyping its name',
+      "Caffeine and sodium now show as their own stat cards at the top, alongside carbs, once you're tracking either",
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-08-15',
     changes: [

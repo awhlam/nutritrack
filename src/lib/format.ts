@@ -93,14 +93,26 @@ export function formatOptionalExtras(caffeine: number, sodium: number): string {
 
 const MIN_ELAPSED_FOR_RATE_MS = 60_000
 
-export function carbsPerHour(session: Session, now: number): number | null {
+function ratePerHour(total: number, session: Session, now: number): number | null {
   const elapsed = elapsedMs(session, now)
   if (elapsed < MIN_ELAPSED_FOR_RATE_MS) return null
-  return totalCarbs(session.entries) / (elapsed / 3_600_000)
+  return total / (elapsed / 3_600_000)
 }
 
-export function formatRate(perHour: number | null): string {
-  return perHour === null ? '—' : `${Math.round(perHour)}g`
+export function carbsPerHour(session: Session, now: number): number | null {
+  return ratePerHour(totalCarbs(session.entries), session, now)
+}
+
+export function caffeinePerHour(session: Session, now: number): number | null {
+  return ratePerHour(totalCaffeine(session.entries), session, now)
+}
+
+export function sodiumPerHour(session: Session, now: number): number | null {
+  return ratePerHour(totalSodium(session.entries), session, now)
+}
+
+export function formatRate(perHour: number | null, unit: 'g' | 'mg' = 'g'): string {
+  return perHour === null ? '—' : `${Math.round(perHour)}${unit}`
 }
 
 export function buildTextExport(session: Session): string {
@@ -116,7 +128,9 @@ export function buildTextExport(session: Session): string {
   const carbs = totalCarbs(session.entries)
   const caffeine = totalCaffeine(session.entries)
   const sodium = totalSodium(session.entries)
-  const perHour = carbsPerHour(session, end)
+  const carbsRate = carbsPerHour(session, end)
+  const caffeineRate = caffeinePerHour(session, end)
+  const sodiumRate = sodiumPerHour(session, end)
   const pending = pendingCarbsCount(session.entries)
 
   lines.push(session.name ? `NutriTrack — ${session.name}` : 'NutriTrack')
@@ -126,7 +140,13 @@ export function buildTextExport(session: Session): string {
   lines.push(`Total Carbs:    ${Math.round(carbs)} g${pending > 0 ? ' (excludes pending entries below)' : ''}`)
   if (caffeine > 0) lines.push(`Total Caffeine: ${Math.round(caffeine)} mg`)
   if (sodium > 0) lines.push(`Total Sodium:   ${Math.round(sodium)} mg`)
-  lines.push(`Avg Carbs/hr:   ${perHour === null ? '—' : `${Math.round(perHour)} g/hr`}`)
+  lines.push(`Avg Carbs/hr:   ${carbsRate === null ? '—' : `${Math.round(carbsRate)} g/hr`}`)
+  if (caffeine > 0) {
+    lines.push(`Avg Caffeine/hr:${caffeineRate === null ? ' —' : ` ${Math.round(caffeineRate)} mg/hr`}`)
+  }
+  if (sodium > 0) {
+    lines.push(`Avg Sodium/hr:  ${sodiumRate === null ? '—' : `${Math.round(sodiumRate)} mg/hr`}`)
+  }
   lines.push(`Entries:        ${session.entries.length}`)
   lines.push('')
   lines.push('Time       Mileage   Item                      Carbs    Extras')
@@ -147,16 +167,4 @@ export function buildTextExport(session: Session): string {
   lines.push('Logged with NutriTrack')
 
   return lines.join('\n')
-}
-
-export function downloadTextFile(filename: string, content: string) {
-  const blob = new Blob([content], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
 }

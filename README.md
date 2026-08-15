@@ -15,20 +15,21 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 ## Features
 
 - **Start when you're ready** — the app opens to a start screen so you can review or edit your presets first; tracking only begins once you tap Start. Reopening later resumes whatever's still in progress, complete with a pulsing "In Progress" indicator so it's obvious the clock is live.
+- **Explicit Start / Reset / End** — Start begins tracking; Reset restarts the clock and clears the log, mileage, and drink progress for a mis-start or a re-rack, without making you retype the event name; End finalizes the session into History.
 - **Auto-ends forgotten sessions** — if a session sits with no new entries or edits for 6 hours (e.g. you forgot to tap "End"), it's automatically closed using the time of that last activity.
 - **Name your event** — tap "+ Name this event" (during the activity or afterward) to label a session, e.g. "Boston Marathon". Shows up in History, on the summary screen, and in both export formats; unnamed sessions just show their date, as before.
 - **One-tap logging** — preset buttons for the nutrition you bring. Tapping one instantly logs the time and your current mileage.
 - **Tap-to-add preset slots** — the button grid always shows a few empty slots alongside your configured ones; tap an empty one to define a new preset (label, carbs, optional caffeine/sodium, color) right there.
 - **Carbs, caffeine, and sodium** — carbs is the one required number; caffeine and sodium sit behind a single "+ Add caffeine / sodium" toggle in every form, collapsed by default so setup stays to just a label and a carb count unless you want more. Either only shows up in the UI once you've actually set it.
-- **Two drink bottle slots** — assign what's in each bottle, then log how much you've drunk in quarters (¼ / ½ / ¾ / Empty). Each log only counts the amount consumed *since* the last one — no double-counting — and progress is derived from the log itself, so editing or deleting an entry can't leave it out of sync.
+- **Two drink bottle slots** — assign what's in each bottle, then log how much you've drunk in quarters (¼ / ½ / ¾ / Empty). Each log only counts the amount consumed *since* the last one — no double-counting — and progress is derived from the log itself, so editing or deleting an entry can't leave it out of sync. If you already have drink presets saved, the first two fill both slots automatically when a session starts (or resets), so there's nothing to set up before you're moving.
 - **Custom entries** — a distinct full-width button (not just another preset tile) for logging anything unplanned with a label, carb count, and optional caffeine/sodium, or logging it now and filling in the carbs later (e.g. an aid-station snack you can't identify mid-stride).
 - **Mileage tracking** — a big +/− stepper in whole miles (tap the number to type an exact value), snapshotted onto each entry you log.
-- **Live stats** — a compact row of elapsed time, total carbs, and carbs/hour, updated in real time. If you're tracking caffeine and/or sodium, their totals appear as a small line underneath — so the display doesn't get busier just because a metric goes unused. Entries still missing a carb count are flagged and excluded from the totals until filled in.
+- **Live stats** — elapsed time plus a compact card per nutrient you're tracking (carbs always; caffeine and sodium once you've logged any), each showing its running total and per-hour rate together — so the display doesn't get busier just because a metric goes unused, but once it's in use you get both numbers at a glance. Entries still missing a carb count are flagged and excluded from the totals until filled in.
 - **Editable log** — every entry's time, mileage, carb count, caffeine, and sodium can be corrected after the fact; entries can also be deleted. A session's own start time (and end time, once finished) is editable the same way.
 - **Preset manager** — add, edit, or delete your preset nutrition buttons and drinks, reachable from the grid or via a History button in the tracker header.
 - **History** — past activities are saved locally so you can review them later.
-- **Export** — at the end of a session, export the log as a plain-text summary (`.txt`) or a shareable image (`.png`).
-- **Version and changelog** — the current version shows at the bottom of the start screen; tap it for a "What's New" list of what changed in each release, viewable offline like everything else.
+- **Export** — at the end of a session, export the log as text you can copy straight to the clipboard (totals, per-hour rates, and the full entry-by-entry log) or as a shareable image (`.png`).
+- **Version and changelog** — the current version shows at the bottom of the start screen; tap it for a "What's New" list of what changed in each release, viewable offline like everything else. A "Check for Updates" button sits right next to it, so you can pull the latest version on demand instead of waiting for the automatic check or clearing browser data.
 
 All data is stored locally in the browser (`localStorage`) — no account or
 backend required.

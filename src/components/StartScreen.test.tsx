@@ -2,12 +2,17 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { StartScreen } from './StartScreen'
 import { CURRENT_VERSION } from '../lib/changelog'
+import { AppUpdateProvider } from '../hooks/useAppUpdate'
 
 function renderScreen() {
   const onStart = vi.fn()
   const onManagePresets = vi.fn()
   const onHistory = vi.fn()
-  render(<StartScreen onStart={onStart} onManagePresets={onManagePresets} onHistory={onHistory} />)
+  render(
+    <AppUpdateProvider>
+      <StartScreen onStart={onStart} onManagePresets={onManagePresets} onHistory={onHistory} />
+    </AppUpdateProvider>,
+  )
   return { onStart, onManagePresets, onHistory }
 }
 
@@ -43,6 +48,11 @@ describe('StartScreen', () => {
   it('shows the current version', () => {
     renderScreen()
     expect(screen.getByText(`v${CURRENT_VERSION} · What's New`)).toBeTruthy()
+  })
+
+  it('shows a Check for Updates button', () => {
+    renderScreen()
+    expect(screen.getByText('Check for Updates')).toBeTruthy()
   })
 
   it('tapping the version opens the changelog, and it does not start tracking', () => {

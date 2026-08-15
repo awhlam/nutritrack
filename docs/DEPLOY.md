@@ -73,12 +73,16 @@ banner appears — "A new version of NutriTrack is available" with a Refresh
 button — instead of updating silently in the background where it's easy to
 miss. Tap Refresh and it reloads on the new version immediately.
 
-If you're not seeing a change you expect and no banner has appeared, the
-service worker may not have rechecked yet.
+If you're not seeing a change you expect and no banner has appeared, tap
+"Check for Updates" next to the version number on the start screen to force a
+recheck on the spot.
 
 <details>
 <summary>Still not seeing the update?</summary>
 
+- **Check for Updates:** tap it on the start screen (next to the version
+  number) to force a recheck immediately, instead of waiting for the
+  automatic one.
 - **Home-screen installed app:** fully close it (swipe it away in the app
   switcher — backgrounding it doesn't count) and reopen. This sometimes takes
   two reopens: the first fetches the update, the second serves it.

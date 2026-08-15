@@ -38,6 +38,7 @@ interface TrackerProps {
   onManagePresets: () => void
   onHistory: () => void
   onEndSession: () => void
+  onResetSession: () => void
   onAssignDrink: (slotIndex: 0 | 1, presetId: string) => void
   onCreateAndAssignDrink: (
     slotIndex: 0 | 1,
@@ -62,6 +63,7 @@ export function Tracker({
   onManagePresets,
   onHistory,
   onEndSession,
+  onResetSession,
   onAssignDrink,
   onCreateAndAssignDrink,
   onClearDrink,
@@ -91,6 +93,13 @@ export function Tracker({
             className="rounded-full bg-slate-800 px-4 py-1.5 text-sm font-semibold text-slate-300 active:bg-slate-700"
           >
             History
+          </button>
+          <button
+            type="button"
+            onClick={onResetSession}
+            className="rounded-full bg-amber-500/15 px-4 py-1.5 text-sm font-semibold text-amber-400 active:bg-amber-500/25"
+          >
+            Reset
           </button>
           <button
             type="button"
