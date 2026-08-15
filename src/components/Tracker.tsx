@@ -76,7 +76,12 @@ export function Tracker({
   return (
     <div className="flex flex-1 flex-col gap-3 px-4 pb-6 pt-4">
       <div className="flex items-center justify-between">
-        <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-300">
+        <span
+          className="flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-300"
+          role="status"
+          aria-label="Session active"
+        >
+          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-400" aria-hidden="true" />
           In Progress
         </span>
         <div className="flex gap-2">

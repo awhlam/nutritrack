@@ -55,7 +55,7 @@ function Stat({
     <div className="rounded-2xl bg-slate-800/60 py-2 text-center">
       <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
       <div
-        className={`text-lg font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}
+        className={`whitespace-nowrap text-lg font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}
       >
         {value}
       </div>

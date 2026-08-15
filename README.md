@@ -14,7 +14,7 @@ rides — designed for big, glove/sweat-friendly buttons you can hit mid-activit
 
 ## Features
 
-- **Start when you're ready** — the app opens to a start screen so you can review or edit your presets first; tracking only begins once you tap Start. Reopening later resumes whatever's still in progress.
+- **Start when you're ready** — the app opens to a start screen so you can review or edit your presets first; tracking only begins once you tap Start. Reopening later resumes whatever's still in progress, complete with a pulsing "In Progress" indicator so it's obvious the clock is live.
 - **Auto-ends forgotten sessions** — if a session sits with no new entries or edits for 6 hours (e.g. you forgot to tap "End"), it's automatically closed using the time of that last activity.
 - **Name your event** — tap "+ Name this event" (during the activity or afterward) to label a session, e.g. "Boston Marathon". Shows up in History, on the summary screen, and in both export formats; unnamed sessions just show their date, as before.
 - **One-tap logging** — preset buttons for the nutrition you bring. Tapping one instantly logs the time and your current mileage.
